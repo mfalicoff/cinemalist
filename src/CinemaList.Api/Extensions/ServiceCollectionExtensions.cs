@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddScraping(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbSettings"));
+        services.BindFromConfiguration<MongoDbSettings>(configuration);
         
         services.AddHostedService<ScraperInitializerService>();
         services.AddScoped<IScraperService, ScraperService>();
@@ -30,6 +30,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMongoClient>(sp =>
         {
             MongoDbSettings mongoSettings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+
+            if (string.IsNullOrEmpty(mongoSettings.ConnectionString))
+            {
+                throw new InvalidOperationException(
+                    "MongoDB connection string not found. Configure it in MongoDbSettings:ConnectionString or store it in Vault as 'ConnectionString'.");
+            }
+            
             return new MongoClient(mongoSettings.ConnectionString);
         });
 
@@ -37,16 +44,20 @@ public static class ServiceCollectionExtensions
         {
             MongoDbSettings mongoSettings = serviceProvider.GetRequiredService<IOptions<MongoDbSettings>>().Value;
             IMongoClient mongoClient = serviceProvider.GetRequiredService<IMongoClient>();
+
+            if (string.IsNullOrEmpty(mongoSettings.DatabaseName))
+            {
+                throw new InvalidOperationException(
+                    "MongoDB database name not found. Configure it in MongoDbSettings:DatabaseName or store it in Vault as 'DatabaseName'.");
+            }
+            
             return mongoClient.GetDatabase(mongoSettings.DatabaseName);
         });
 
         services.AddSingleton<IMongoCollection<ScraperHistoryEntity>>(serviceProvider =>
         {
-            MongoDbSettings mongoSettings = serviceProvider.GetRequiredService<IOptions<MongoDbSettings>>().Value;
-            IMongoClient mongoClient = serviceProvider.GetRequiredService<IMongoClient>();
-            return mongoClient
-                .GetDatabase(mongoSettings.DatabaseName)
-                .GetCollection<ScraperHistoryEntity>("scraper_history");
+            IMongoDatabase mongoDatabase = serviceProvider.GetRequiredService<IMongoDatabase>();
+            return mongoDatabase.GetCollection<ScraperHistoryEntity>("scraper_history");
         });
 
         services.AddTransient<IScraperHistoryRepository, ScraperFilmRepository>();
@@ -56,7 +67,7 @@ public static class ServiceCollectionExtensions
     
     public static IServiceCollection AddMovieServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<OMDbSettings>(configuration.GetSection("OMDbSettings"));
+        services.BindFromConfiguration<OMDbSettings>(configuration);
 
         services.AddHttpClient<IIMBDService, IMBDService>(options =>
         {

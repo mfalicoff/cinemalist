@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddJsonFile("appsettings.override.json", optional: true, reloadOnChange: true);
+builder.Configuration.ConfigureConfiguration();
 
 builder.Services.AddOpenApi();
 
