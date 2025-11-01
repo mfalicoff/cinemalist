@@ -1,8 +1,11 @@
 using System;
 using CinemaList.Api.HostedServices;
+using CinemaList.Api.Repository;
+using CinemaList.Api.Repository.Impl;
 using CinemaList.Api.Settings;
 using CinemaList.Api.Services;
 using CinemaList.Api.Services.Impl;
+using CinemaList.Common.Models;
 using CinemaList.Scraper.Models;
 using CinemaList.Scraper.Scrapers;
 using Microsoft.Extensions.Configuration;
@@ -57,6 +60,13 @@ public static class ServiceCollectionExtensions
             IMongoDatabase mongoDatabase = serviceProvider.GetRequiredService<IMongoDatabase>();
             return mongoDatabase.GetCollection<ScraperHistoryEntity>("scraper_history");
         });
+        
+        services.AddSingleton<IMongoCollection<Film>>(serviceProvider =>
+        {
+            IMongoDatabase mongoDatabase = serviceProvider.GetRequiredService<IMongoDatabase>();
+            return mongoDatabase.GetCollection<Film>("films");
+        });
+        services.AddTransient<IFIlmRepository, FilmRepository>();
         
         return services;
     }

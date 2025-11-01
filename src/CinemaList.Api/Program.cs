@@ -30,4 +30,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+FilmEndpoints.MapFilmEndpoints(app);
+ScraperEndpoints.MapScraperEndpoints(app);
+
 app.Run();

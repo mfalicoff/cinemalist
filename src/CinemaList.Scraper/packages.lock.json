@@ -8,31 +8,6 @@
         "resolved": "1.12.4",
         "contentHash": "ljqvBabvFwKoLniuoQKO8b5bJfJweKLs4fUNS/V5dsvpo0A8MlJqxxn9XVmP2DaskbUXty6IYaWAi1SArGIMeQ=="
       },
-      "MongoDB.Bson": {
-        "type": "Direct",
-        "requested": "[3.5.0, )",
-        "resolved": "3.5.0",
-        "contentHash": "JGNK6BanLDEifgkvPLqVFCPus5EDCy416pxf1dxUBRSVd3D9+NB3AvMVX190eXlk5/UXuCxpsQv7jWfNKvppBQ==",
-        "dependencies": {
-          "System.Memory": "4.5.5",
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
-        }
-      },
-      "MongoDB.Driver": {
-        "type": "Direct",
-        "requested": "[3.5.0, )",
-        "resolved": "3.5.0",
-        "contentHash": "ST90u7psyMkNNOWFgSkexsrB3kPn7Ynl2DlMFj2rJyYuc6SIxjmzu4ufy51yzM+cPVE1SvVcdb5UFobrRw6cMg==",
-        "dependencies": {
-          "DnsClient": "1.6.1",
-          "Microsoft.Extensions.Logging.Abstractions": "2.0.0",
-          "MongoDB.Bson": "3.5.0",
-          "SharpCompress": "0.30.1",
-          "Snappier": "1.0.0",
-          "System.Buffers": "4.5.1",
-          "ZstdSharp.Port": "0.7.3"
-        }
-      },
       "DnsClient": {
         "type": "Transitive",
         "resolved": "1.6.1",
@@ -105,7 +80,36 @@
         "contentHash": "U9Ix4l4cl58Kzz1rJzj5hoVTjmbx1qGMwzAcbv1j/d3NzrFaESIurQyg+ow4mivCgkE3S413y+U9k4WdnEIkRA=="
       },
       "cinemalist.common": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "MongoDB.Bson": "[3.5.0, )",
+          "MongoDB.Driver": "[3.5.0, )"
+        }
+      },
+      "MongoDB.Bson": {
+        "type": "CentralTransitive",
+        "requested": "[3.5.0, )",
+        "resolved": "3.5.0",
+        "contentHash": "JGNK6BanLDEifgkvPLqVFCPus5EDCy416pxf1dxUBRSVd3D9+NB3AvMVX190eXlk5/UXuCxpsQv7jWfNKvppBQ==",
+        "dependencies": {
+          "System.Memory": "4.5.5",
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+        }
+      },
+      "MongoDB.Driver": {
+        "type": "CentralTransitive",
+        "requested": "[3.5.0, )",
+        "resolved": "3.5.0",
+        "contentHash": "ST90u7psyMkNNOWFgSkexsrB3kPn7Ynl2DlMFj2rJyYuc6SIxjmzu4ufy51yzM+cPVE1SvVcdb5UFobrRw6cMg==",
+        "dependencies": {
+          "DnsClient": "1.6.1",
+          "Microsoft.Extensions.Logging.Abstractions": "2.0.0",
+          "MongoDB.Bson": "3.5.0",
+          "SharpCompress": "0.30.1",
+          "Snappier": "1.0.0",
+          "System.Buffers": "4.5.1",
+          "ZstdSharp.Port": "0.7.3"
+        }
       }
     }
   }

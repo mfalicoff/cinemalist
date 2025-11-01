@@ -1,7 +1,14 @@
+using System.Diagnostics.CodeAnalysis;
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace CinemaList.Common.Models;
 
 public class Film
 {
+    [BsonId]
+    [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
+    [AllowNull]
+    public string Id { get; set; }
     public required string Title { get; set; }
     public required string IMBDId { get; set; }
 

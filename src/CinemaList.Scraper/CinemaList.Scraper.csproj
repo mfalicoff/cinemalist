@@ -2,8 +2,6 @@
     
     <ItemGroup>
       <PackageReference Include="HtmlAgilityPack" />
-      <PackageReference Include="MongoDB.Driver" />
-      <PackageReference Include="MongoDB.Bson" />
     </ItemGroup>
 
     <ItemGroup>

@@ -3,7 +3,6 @@
     <ItemGroup>
         <PackageReference Include="HashiCorp.Vault" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-        <PackageReference Include="MongoDB.Driver" />
         <PackageReference Include="Polly" />
         <PackageReference Include="Scalar.AspNetCore" />
     </ItemGroup>
