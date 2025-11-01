@@ -11,7 +11,7 @@ namespace CinemaList.Api.Endpoints;
 
 public record FilmResult
 {
-    public List<Film> Films { get; set; } = [];
+    public List<Film> Result { get; set; } = [];
 }
 
 public static class FilmEndpoints
@@ -26,11 +26,21 @@ public static class FilmEndpoints
         app.MapGet("/all", GetAllFilms)
             .WithName("GetAllFilms")
             .WithDescription("Get all films from the data store.");
+        
+        app.MapGet("/{id}", GetFilmById)
+            .WithName("GetFilmById")
+            .WithDescription("Get a film by its ID from the data store.");
     }
     
     private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetAllFilms(IFIlmRepository filmRepository)
     {
         List<Film> films = await filmRepository.GetAllFilms();
-        return TypedResults.Ok(new FilmResult { Films = films });
+        return TypedResults.Ok(new FilmResult { Result = films });
+    }
+    
+    private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetFilmById(string id, IFIlmRepository filmRepository)
+    {
+        Film film = await filmRepository.GetFilmById(id);
+        return TypedResults.Ok(new FilmResult { Result = [film] });
     }
 }

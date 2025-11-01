@@ -13,7 +13,7 @@ namespace CinemaList.Api.Endpoints;
 
 public record ScraperResult
 {
-    public List<ScraperHistoryEntity> ScraperRuns { get; set; } = [];
+    public List<ScraperHistoryEntity> Result { get; set; } = [];
 }
 
 public static class ScraperEndpoints
@@ -33,6 +33,6 @@ public static class ScraperEndpoints
     private static async Task<Results<Ok<ScraperResult>, ProblemHttpResult>> GetScraperHistory(IMongoCollection<ScraperHistoryEntity> scraperHistoryCollection)
     {
         List<ScraperHistoryEntity>? history = await scraperHistoryCollection.Find(_ => true).ToListAsync();
-        return TypedResults.Ok(new ScraperResult { ScraperRuns = history });
+        return TypedResults.Ok(new ScraperResult { Result = history });
     }
 }

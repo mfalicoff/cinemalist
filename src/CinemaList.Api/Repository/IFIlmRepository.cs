@@ -11,7 +11,7 @@ public interface IFIlmRepository
     /// Get all films from the data store.
     /// </summary>
     /// <returns></returns>
-    public Task<List<Film>> GetAllFilms();
+    Task<List<Film>> GetAllFilms();
     
     /// <summary>
     /// Insert or update films in the data store.
@@ -19,5 +19,13 @@ public interface IFIlmRepository
     /// <param name="films"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task UpsertFilms(List<Film> films, CancellationToken cancellationToken = default);
+    Task UpsertFilms(List<Film> films, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get a film by its ID from the data store.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Film> GetFilmById(string id, CancellationToken cancellationToken = default);
 }

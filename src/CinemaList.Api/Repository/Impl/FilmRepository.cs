@@ -30,4 +30,9 @@ public class FilmRepository(IMongoCollection<Film> collection): IFIlmRepository
         
         await _collection.BulkWriteAsync(bulkOps, cancellationToken: cancellationToken);
     }
+
+    public async Task<Film> GetFilmById(string id, CancellationToken cancellationToken = default)
+    {
+        return await _collection.Find(f => f.IMBDId == id).FirstOrDefaultAsync(cancellationToken);
+    }
 }
