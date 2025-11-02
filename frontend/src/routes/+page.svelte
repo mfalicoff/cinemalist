@@ -1,7 +1,6 @@
 <script lang="ts">
     import type { PageData } from "./$types";
     import FilmModal from "$lib/components/FilmModal.svelte";
-    import { fetchFilmById } from "$lib/api/films";
     import type { Film } from "$lib/types/film";
 
     let { data }: { data: PageData } = $props();
@@ -17,7 +16,11 @@
         isLoadingFilm = true;
         console.log("Viewing film with IMDb ID:", imdbId);
         try {
-            const film = await fetchFilmById(imdbId);
+            const response = await fetch(`/api/films/${imdbId}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch film: ${response.statusText}`);
+            }
+            const film = await response.json();
             if (film) {
                 selectedFilm = film;
                 isModalOpen = true;
