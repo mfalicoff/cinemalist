@@ -11,7 +11,7 @@
     <Sidebar currentPath={$page.url.pathname} />
 
     <!-- Main Content Area -->
-    <main class="flex-1 ml-64">
+    <main class="flex-1 md:ml-64">
         {@render children()}
     </main>
 </div>

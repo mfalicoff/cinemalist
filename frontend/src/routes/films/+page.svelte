@@ -64,7 +64,7 @@
 <FilmModal film={selectedFilm} isOpen={isModalOpen} onClose={closeModal} />
 
 <div class="min-h-screen bg-gradient-to-br from-primary-500 to-primary-700">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 md:pt-8">
         <!-- Header -->
         <header class="text-center text-white mb-8">
             <h1 class="text-5xl md:text-6xl font-bold mb-2">🎬 Films</h1>
@@ -142,7 +142,7 @@
         {:else if filteredFilms.length > 0}
             <!-- Films Grid -->
             <div
-                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-8"
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6 mb-8"
             >
                 {#each filteredFilms as film}
                     <div
@@ -172,15 +172,15 @@
                         {/if}
 
                         <!-- Info -->
-                        <div class="p-4">
+                        <div class="p-2 sm:p-3 md:p-4">
                             <h3
-                                class="font-bold text-gray-900 text-base mb-2 line-clamp-2"
+                                class="font-bold text-gray-900 text-xs sm:text-sm md:text-base mb-1 sm:mb-2 line-clamp-2"
                                 title={film.title}
                             >
                                 {film.title}
                             </h3>
                             <div
-                                class="flex items-center gap-2 text-xs text-gray-500"
+                                class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-gray-500"
                             >
                                 {#if film.year}
                                     <span>📅 {film.year}</span>
@@ -189,7 +189,9 @@
                                     <span>🌍 {film.country}</span>
                                 {/if}
                             </div>
-                            <div class="text-xs text-gray-500 mt-1">
+                            <div
+                                class="text-xs text-gray-500 mt-1 hidden sm:block"
+                            >
                                 <span
                                     >{film.isInRadarr
                                         ? "In Radarr: ✅"
