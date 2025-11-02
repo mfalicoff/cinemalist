@@ -1,18 +1,9 @@
-using System.Collections.Generic;
-using System.Threading;
 using CinemaList.Api.Endpoints;
 using Scalar.AspNetCore;
 using CinemaList.Api.Extensions;
-using CinemaList.Api.Services;
-using CinemaList.Common.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
-using CinemaList.Scraper.Models;
-using Microsoft.AspNetCore.Http;
-using MongoDB.Driver;
-
 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -27,6 +18,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddMovieServices(builder.Configuration);
 builder.Services.AddScraping(builder.Configuration);
 
+builder.Services.AddHealthChecks();
+
 WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -40,5 +33,6 @@ app.UseAuthorization();
 
 FilmEndpoints.MapFilmEndpoints(app);
 ScraperEndpoints.MapScraperEndpoints(app);
+app.MapHealthChecks("/health");
 
 app.Run();

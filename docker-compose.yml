@@ -1,45 +1,40 @@
 services:
-  api:
+  backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
-    image: cinemalist-api:latest
-    container_name: cinemalist-api
+    image: cinemalist-backend:latest
+    container_name: cinemalist-backend
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      # Inject mongo connection string pointing to the mongo service
-      MONGO_CONNECTION_STRING: mongodb://mongo:27017
-    ports:
-      - "5104:8080"  # Map container's HTTP port to local dev port from launchSettings
-    depends_on:
-      - mongo
-
-  mongoku:
-    image: huggingface/mongoku:latest
-    container_name: cinemalist-mongoku
-    environment:
-      # Provide full connection string explicitly so Mongoku does not fall back to localhost
-      MONGOKU_DEFAULT_URI: mongodb://mongo:27017/cinemalist
-      # (Optional) also set discrete values in case image version prefers them
-      MONGOKU_DEFAULT_HOST: mongo
-      MONGOKU_DEFAULT_PORT: 27017
-      MONGOKU_DEFAULT_DB: cinemalist
-    ports:
-      - "3100:3100"
-    depends_on:
-      - mongo
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: 8080
+      VaultSettings__Address: ${VAULT_ADDRESS}
+      VaultSettings__Token: ${VAULT_TOKEN}
+    expose:
+      - "8080"
+    networks:
+      - cinemalist
     restart: unless-stopped
-    
-  mongo:
-    image: mongo:8.0
-    container_name: cinemalist-mongo
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-    environment:
-      MONGO_INITDB_DATABASE: cinemalist
 
-volumes:
-  mongo-data:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: cinemalist-frontend:latest
+    container_name: cinemalist-frontend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      PUBLIC_API_URL: http://backend:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - cinemalist
+    restart: unless-stopped
+
+networks:
+  cinemalist:
+    driver: bridge

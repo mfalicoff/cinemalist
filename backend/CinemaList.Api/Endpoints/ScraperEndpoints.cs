@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CinemaList.Api.Repository;
-using CinemaList.Common.Models;
 using CinemaList.Scraper.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
