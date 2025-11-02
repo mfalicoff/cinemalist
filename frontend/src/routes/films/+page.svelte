@@ -3,14 +3,34 @@
     import FilmModal from "$lib/components/FilmModal.svelte";
     import type { Film } from "$lib/types/film";
 
-    let { data }: { data: PageData } = $props();
+    let { data, form }: { data: PageData; form: any } = $props();
 
-    let films = $derived(data.films || []);
+    let films = $state(data.films || []);
     let error = $derived(data.error);
 
     let selectedFilm: Film | null = $state(null);
     let isModalOpen = $state(false);
     let searchQuery = $state("");
+
+    // Sync films with data changes
+    $effect(() => {
+        films = data.films || [];
+    });
+
+    // Handle form action result for optimistic updates
+    $effect(() => {
+        if (form?.success && form.tmdbId) {
+            // Optimistically update the film in the local state
+            films = films.map((f) =>
+                f.tmdbId === form.tmdbId ? { ...f, isInRadarr: true } : f,
+            );
+
+            // Update the selected film if it matches
+            if (selectedFilm && selectedFilm.tmdbId === form.tmdbId) {
+                selectedFilm = { ...selectedFilm, isInRadarr: true };
+            }
+        }
+    });
 
     // Filter films based on search query
     let filteredFilms = $derived.by(() => {

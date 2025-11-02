@@ -1,9 +1,9 @@
-import { PUBLIC_API_URL } from "$env/static/public";
+import { env } from "$env/dynamic/public";
 import type { Film } from "$lib/types/film";
 
 export async function fetchAllFilms(): Promise<Film[]> {
   try {
-    const response = await fetch(`${PUBLIC_API_URL}/api/films/all`);
+    const response = await fetch(`${env.PUBLIC_API_URL}/api/films/all`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch films: ${response.statusText}`);
@@ -19,7 +19,7 @@ export async function fetchAllFilms(): Promise<Film[]> {
 
 export async function fetchFilmById(imdbId: string): Promise<Film | null> {
   try {
-    const response = await fetch(`${PUBLIC_API_URL}/api/films/${imdbId}`);
+    const response = await fetch(`${env.PUBLIC_API_URL}/api/films/${imdbId}`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch film ${imdbId}: ${response.statusText}`);
@@ -37,7 +37,7 @@ export async function fetchFilmById(imdbId: string): Promise<Film | null> {
 export async function addToRadarr(tmdbId: string): Promise<void> {
   try {
     const response = await fetch(
-      `${PUBLIC_API_URL}/api/films/radarr/${tmdbId}`,
+      `${env.PUBLIC_API_URL}/api/films/radarr/${tmdbId}`,
       {
         method: "POST",
         headers: {
