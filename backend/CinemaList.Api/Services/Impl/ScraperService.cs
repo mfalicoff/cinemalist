@@ -9,13 +9,13 @@ using Microsoft.Extensions.Logging;
 
 namespace CinemaList.Api.Services.Impl;
 
-public class ScraperService(IEnumerable<Scraper.Scrapers.Scraper> scrapers, IMovieService movieService, IFIlmRepository filmRepository, ILogger<ScraperService> logger): IScraperService
+public class ScraperService(IEnumerable<Scraper.Scrapers.Scraper> scrapers, IMovieService movieService, IFilmRepository filmRepository, ILogger<ScraperService> logger): IScraperService
 {
     private readonly IEnumerable<Scraper.Scrapers.Scraper> _scrapers = scrapers;
 
     private readonly IMovieService _movieService = movieService;
 
-    private readonly IFIlmRepository _filmRepository = filmRepository;
+    private readonly IFilmRepository _filmRepository = filmRepository;
 
     private readonly ILogger<ScraperService> _logger = logger;
     

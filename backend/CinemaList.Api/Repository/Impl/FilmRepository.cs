@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace CinemaList.Api.Repository.Impl;
 
-public class FilmRepository(IMongoCollection<Film> collection): IFIlmRepository
+public class FilmRepository(IMongoCollection<Film> collection): IFilmRepository
 {
     private readonly IMongoCollection<Film> _collection = collection;
 

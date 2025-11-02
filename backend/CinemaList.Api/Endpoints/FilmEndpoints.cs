@@ -38,13 +38,13 @@ public static class FilmEndpoints
             .WithDescription("Add a film to Radarr by its ID.");
     }
     
-    private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetAllFilms(IFIlmRepository filmRepository)
+    private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetAllFilms(IFilmRepository filmRepository)
     {
         List<Film> films = await filmRepository.GetAllFilms();
         return TypedResults.Ok(new FilmResult { Result = films });
     }
     
-    private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetFilmById(string id, IFIlmRepository filmRepository)
+    private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetFilmById(string id, IFilmRepository filmRepository)
     {
         Film film = await filmRepository.GetFilmById(id);
         return TypedResults.Ok(new FilmResult { Result = [film] });

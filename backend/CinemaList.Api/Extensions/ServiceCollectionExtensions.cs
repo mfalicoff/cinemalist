@@ -1,4 +1,5 @@
 using System;
+using CinemaList.Api.Clients;
 using CinemaList.Api.HostedServices;
 using CinemaList.Api.Repository;
 using CinemaList.Api.Repository.Impl;
@@ -8,7 +9,6 @@ using CinemaList.Api.Services.Impl;
 using CinemaList.Common.Models;
 using CinemaList.Scraper.Models;
 using CinemaList.Scraper.Scrapers;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -17,10 +17,8 @@ namespace CinemaList.Api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddScraping(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddScraping(this IServiceCollection services)
     {
-        services.BindFromConfiguration<MongoDbSettings>(configuration);
-        
         services.AddHostedService<ScraperInitializerService>();
         services.AddScoped<IScraperService, ScraperService>();
         services.AddHttpClient<Scraper.Scrapers.Scraper, CinemaModerneScraper>(options =>
@@ -66,19 +64,28 @@ public static class ServiceCollectionExtensions
             IMongoDatabase mongoDatabase = serviceProvider.GetRequiredService<IMongoDatabase>();
             return mongoDatabase.GetCollection<Film>("films");
         });
-        services.AddTransient<IFIlmRepository, FilmRepository>();
+        services.AddTransient<IFilmRepository, FilmRepository>();
         
         return services;
     }
     
-    public static IServiceCollection AddMovieServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddMovieServices(this IServiceCollection services)
     {
-        services.BindFromConfiguration<OMDbSettings>(configuration);
-
-        services.AddHttpClient<IMovieService, MovieService>(options =>
+        services.AddHttpClient<OmdbClient>( client =>
         {
-            options.BaseAddress = new Uri("https://www.omdbapi.com/");
+            client.BaseAddress = new Uri("https://www.omdbapi.com/");
         });
+        
+        services.AddHttpClient<RadarrClient>(client =>
+        {
+            RadarrSettings radarrSettings =
+                services.BuildServiceProvider().GetRequiredService<IOptions<RadarrSettings>>().Value;
+            client.BaseAddress = new Uri(radarrSettings.BaseUrl);
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+            client.DefaultRequestHeaders.Add("X-Api-Key", radarrSettings.ApiKey);
+        });
+        
+        services.AddTransient<IMovieService, MovieService>();
         
         return services;
     }

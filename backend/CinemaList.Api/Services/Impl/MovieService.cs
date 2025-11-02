@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using CinemaList.Api.Clients;
 using CinemaList.Api.Models;
 using CinemaList.Api.Repository;
 using CinemaList.Api.Settings;
@@ -14,12 +15,32 @@ using Microsoft.Extensions.Options;
 
 namespace CinemaList.Api.Services.Impl;
 
-public class MovieService(HttpClient httpClient, IOptions<OMDbSettings> settings, IFIlmRepository fIlmRepository): IMovieService
+public class MovieService(RadarrClient radarrClient, OmdbClient omdbClient, IOptions<OMDbSettings> omdbSettings, IOptions<RadarrSettings> radarrSettings, IFilmRepository filmRepository): IMovieService
 {
-    private readonly HttpClient _httpClient = httpClient;
-    private readonly IFIlmRepository _fIlmRepository = fIlmRepository;
+    private readonly RadarrClient _radarrClient = radarrClient;
 
-    private readonly OMDbSettings _omDbSettings = settings.Value;
+    private readonly OmdbClient _omdbClient = omdbClient;
+
+    private readonly IFilmRepository _filmRepository = filmRepository;
+
+    private readonly OMDbSettings _omDbSettings = omdbSettings.Value;
+    
+    private readonly RadarrSettings _radarrSettings = radarrSettings.Value;
+    
+    private record RadarrRequest
+    {
+        public required string TmdbId { get; init; }
+        public required string QualityProfileId { get; init; }
+        public required string RootFolderPath { get; init; }
+        public required bool Monitored { get; init; }
+        public required RadarrAddOptions AddOptions { get; init; }
+    }
+    
+    private record RadarrAddOptions
+    {
+        public required bool SearchForMovie { get; init; }
+    }
+
 
     public async Task<Film?> FetchMovieMetadata(ScrapedFilm scrapedFilm, CancellationToken cancellationToken = default)
     {
@@ -46,31 +67,29 @@ public class MovieService(HttpClient httpClient, IOptions<OMDbSettings> settings
     
     public async Task AddMovieToRadarr(string tmdbId, CancellationToken cancellationToken = default)
     {
-        HttpClient radarrClient = new HttpClient();
-        radarrClient.DefaultRequestHeaders.Add("X-Api-Key", "6fb27e548692416084615b4f2cea48f4");
-        var request = new
+
+        RadarrRequest request = new()
         {
-            tmdbId = tmdbId,
-            qualityProfileId = 5,
-            rootFolderPath = "/mnt/media/movies",
-            monitored = true,
-            addOptions = new
+            TmdbId = tmdbId,
+            QualityProfileId = _radarrSettings.QualityProfileId.ToString(),
+            RootFolderPath = _radarrSettings.RootFolderPath,
+            Monitored = true,
+            AddOptions = new RadarrAddOptions
             {
-                searchForMovie = false
+                SearchForMovie = false
             }
         };
 
-        HttpResponseMessage response = await radarrClient.PostAsJsonAsync($"https://radarr.caddy.mazilious.org/api/v3/movie/", request, cancellationToken);
+        HttpResponseMessage response = await _radarrClient.Client.PostAsJsonAsync("api/v3/movie/", request, cancellationToken);
         response.EnsureSuccessStatusCode();
         
-        // change movie to monitored
-        await _fIlmRepository.UpdateFilmRadarrStatus(tmdbId, true, cancellationToken);
+        await _filmRepository.UpdateFilmRadarrStatus(tmdbId, true, cancellationToken);
         
     }
     
     private async Task<OmdbMovie?> GetImdbIdFromScrapedFilm(ScrapedFilm scrapedFilm, CancellationToken cancellationToken)
     {
-        HttpResponseMessage response = await _httpClient.GetAsync($"?apikey={_omDbSettings.ApiKey}&s={HttpUtility.HtmlEncode(scrapedFilm.Title)}&y={scrapedFilm.Year}", cancellationToken);
+        HttpResponseMessage response = await _omdbClient.Client.GetAsync($"?apikey={_omDbSettings.ApiKey}&s={HttpUtility.HtmlEncode(scrapedFilm.Title)}&y={scrapedFilm.Year}", cancellationToken);
         if (!response.IsSuccessStatusCode) return null;
         
         OmdbResponse? omdbResponse = await OmdbResponse.CreateFromResponse(response, cancellationToken);
@@ -85,9 +104,7 @@ public class MovieService(HttpClient httpClient, IOptions<OMDbSettings> settings
     
     private async Task<RadarrMovie?> FetchRadarrMetadata(string imdbId, CancellationToken cancellationToken)
     {
-        HttpClient radarrClient = new HttpClient();
-        radarrClient.DefaultRequestHeaders.Add("X-Api-Key", "6fb27e548692416084615b4f2cea48f4");
-        HttpResponseMessage response = await radarrClient.GetAsync($"https://radarr.caddy.mazilious.org/api/v3/movie/lookup/imdb?imdbId={imdbId}", cancellationToken);
+        HttpResponseMessage response = await _radarrClient.Client.GetAsync($"api/v3/movie/lookup/imdb?imdbId={imdbId}", cancellationToken);
         if (!response.IsSuccessStatusCode) return null;
         
         string stringResponse = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -96,9 +113,7 @@ public class MovieService(HttpClient httpClient, IOptions<OMDbSettings> settings
     
     private async Task<bool> IsFilmInRadarrAsync(string tmdbId, CancellationToken cancellationToken)
     {
-        HttpClient radarrClient = new HttpClient();
-        radarrClient.DefaultRequestHeaders.Add("X-Api-Key", "6fb27e548692416084615b4f2cea48f4");
-        HttpResponseMessage response = await radarrClient.GetAsync($"https://radarr.caddy.mazilious.org/api/v3/movie?tmdbId={tmdbId}", cancellationToken);
+        HttpResponseMessage response = await _radarrClient.Client.GetAsync($"api/v3/movie?tmdbId={tmdbId}", cancellationToken);
         if (!response.IsSuccessStatusCode) return false;
         
         string stringResponse = await response.Content.ReadAsStringAsync(cancellationToken);

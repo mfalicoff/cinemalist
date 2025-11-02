@@ -5,7 +5,7 @@ using CinemaList.Common.Models;
 
 namespace CinemaList.Api.Repository;
 
-public interface IFIlmRepository
+public interface IFilmRepository
 {
     /// <summary>
     /// Get all films from the data store.
