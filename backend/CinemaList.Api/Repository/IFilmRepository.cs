@@ -14,6 +14,14 @@ public interface IFilmRepository
     Task<List<Film>> GetAllFilms();
     
     /// <summary>
+    /// Get films by a certain filter
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<List<Film>> GetFilmsByFilter(FilmFilter filter, CancellationToken cancellationToken = default);
+    
+    /// <summary>
     /// Insert or update films in the data store.
     /// </summary>
     /// <param name="films"></param>
@@ -37,4 +45,11 @@ public interface IFilmRepository
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<Film> GetFilmById(string id, CancellationToken cancellationToken = default);
+}
+
+public enum FilmFilter
+{
+    All,
+    InRadarr,
+    NotInRadarr
 }

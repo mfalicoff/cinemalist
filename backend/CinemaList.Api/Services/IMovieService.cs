@@ -22,4 +22,11 @@ public interface IMovieService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task AddMovieToRadarr(string tmdbId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Update movie status with radarr if a change occured through another source
+    /// </summary>
+    /// <param name="stoppingToken"></param>
+    /// <returns></returns>
+    Task SynchronizeWithRadarr(CancellationToken stoppingToken);
 }

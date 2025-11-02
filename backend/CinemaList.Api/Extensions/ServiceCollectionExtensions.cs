@@ -71,6 +71,8 @@ public static class ServiceCollectionExtensions
     
     public static IServiceCollection AddMovieServices(this IServiceCollection services)
     {
+        services.AddHostedService<RadarrSynchronizerService>();
+        
         services.AddHttpClient<OmdbClient>( client =>
         {
             client.BaseAddress = new Uri("https://www.omdbapi.com/");

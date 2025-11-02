@@ -67,7 +67,6 @@ public class MovieService(RadarrClient radarrClient, OmdbClient omdbClient, IOpt
     
     public async Task AddMovieToRadarr(string tmdbId, CancellationToken cancellationToken = default)
     {
-
         RadarrRequest request = new()
         {
             TmdbId = tmdbId,
@@ -86,7 +85,27 @@ public class MovieService(RadarrClient radarrClient, OmdbClient omdbClient, IOpt
         await _filmRepository.UpdateFilmRadarrStatus(tmdbId, true, cancellationToken);
         
     }
-    
+
+    public async Task SynchronizeWithRadarr(CancellationToken cancellationToken)
+    {
+        List<Film> filmsNotInRadarr = await _filmRepository.GetFilmsByFilter(FilmFilter.NotInRadarr, cancellationToken);
+
+        List<Task> tasks = [];
+        tasks.AddRange(filmsNotInRadarr.Select(film => ProcessFilmAsync(film, cancellationToken)));
+        
+        await Task.WhenAll(tasks);
+        return;
+        
+        async Task ProcessFilmAsync(Film film, CancellationToken ct)
+        {
+            bool isInRadarr = await IsFilmInRadarrAsync(film.TmdbId, ct);
+            if (isInRadarr)
+            {
+                await _filmRepository.UpdateFilmRadarrStatus(film.TmdbId, true, ct);
+            }
+        }
+    }
+
     private async Task<OmdbMovie?> GetImdbIdFromScrapedFilm(ScrapedFilm scrapedFilm, CancellationToken cancellationToken)
     {
         HttpResponseMessage response = await _omdbClient.Client.GetAsync($"?apikey={_omDbSettings.ApiKey}&s={HttpUtility.HtmlEncode(scrapedFilm.Title)}&y={scrapedFilm.Year}", cancellationToken);
