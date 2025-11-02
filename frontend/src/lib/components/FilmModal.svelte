@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Film } from "$lib/types/film";
+    import { addToRadarr } from "$lib/api/films";
 
     interface Props {
         film: Film | null;
@@ -19,6 +20,14 @@
         if (e.key === "Escape") {
             onClose();
         }
+    }
+
+    async function addToRadarrHandler(
+        event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement },
+        tmdbId: string,
+    ) {
+        // Implement logic to add film to Radarr
+        await addToRadarr(tmdbId);
     }
 </script>
 
@@ -87,20 +96,6 @@
 
                 <!-- Film Details -->
                 <div class="space-y-4">
-                    {#if film.director}
-                        <div class="flex items-start gap-3">
-                            <span class="text-2xl">👤</span>
-                            <div>
-                                <p class="text-sm text-gray-500 font-medium">
-                                    Director
-                                </p>
-                                <p class="text-lg text-gray-900">
-                                    {film.director}
-                                </p>
-                            </div>
-                        </div>
-                    {/if}
-
                     {#if film.year}
                         <div class="flex items-start gap-3">
                             <span class="text-2xl">📅</span>
@@ -134,24 +129,43 @@
                                 IMDb ID
                             </p>
                             <p class="text-lg text-gray-900 font-mono">
-                                {film.imbdId}
+                                <a
+                                    href="https://www.imdb.com/title/{film.imdbId}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="text-blue-400"
+                                >
+                                    {film.imdbId}
+                                </a>
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- IMDb Link -->
-                <div class="mt-8">
-                    {console.log(film, film.imbdId)}
-                    <a
-                        href="https://www.imdb.com/title/{film.imbdId}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="block w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 text-center"
-                    >
-                        View on IMDb →
-                    </a>
-                </div>
+                <!-- Radarr Link -->
+                {#if film.isInRadarr}
+                    <div class="mt-8">
+                        <a
+                            href="https://radarr.caddy.mazilious.org/movie/{film.tmdbId}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="block w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 text-center"
+                        >
+                            View in Radarr →
+                        </a>
+                    </div>
+                {/if}
+                {#if !film.isInRadarr}
+                    <div class="mt-8">
+                        <button
+                            onclick={async (e) =>
+                                await addToRadarrHandler(e, film.tmdbId)}
+                            class="block w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 text-center"
+                        >
+                            Add to Radarr →
+                        </button>
+                    </div>
+                {/if}
             </div>
 
             <!-- Footer -->

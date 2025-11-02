@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using CinemaList.Api.Repository;
+using CinemaList.Api.Services;
 using CinemaList.Common.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -30,6 +32,10 @@ public static class FilmEndpoints
         app.MapGet("/{id}", GetFilmById)
             .WithName("GetFilmById")
             .WithDescription("Get a film by its ID from the data store.");
+        
+        app.MapPost("/radarr/{id}", AddToRadarr)
+            .WithName("AddFilmToRadarr")
+            .WithDescription("Add a film to Radarr by its ID.");
     }
     
     private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetAllFilms(IFIlmRepository filmRepository)
@@ -42,5 +48,11 @@ public static class FilmEndpoints
     {
         Film film = await filmRepository.GetFilmById(id);
         return TypedResults.Ok(new FilmResult { Result = [film] });
+    }
+    
+    private static async Task<Results<Ok, ProblemHttpResult>> AddToRadarr(string id, IMovieService movieService)
+    {
+        await movieService.AddMovieToRadarr(id, CancellationToken.None);
+        return TypedResults.Ok();
     }
 }

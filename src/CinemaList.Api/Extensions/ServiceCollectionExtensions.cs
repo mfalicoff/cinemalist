@@ -75,7 +75,7 @@ public static class ServiceCollectionExtensions
     {
         services.BindFromConfiguration<OMDbSettings>(configuration);
 
-        services.AddHttpClient<IIMBDService, IMBDService>(options =>
+        services.AddHttpClient<IMovieService, MovieService>(options =>
         {
             options.BaseAddress = new Uri("https://www.omdbapi.com/");
         });

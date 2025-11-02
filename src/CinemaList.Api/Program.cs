@@ -1,9 +1,19 @@
+using System.Collections.Generic;
+using System.Threading;
+using CinemaList.Api.Endpoints;
 using Scalar.AspNetCore;
 using CinemaList.Api.Extensions;
+using CinemaList.Api.Services;
+using CinemaList.Common.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
+using CinemaList.Scraper.Models;
+using Microsoft.AspNetCore.Http;
+using MongoDB.Driver;
+
+
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -24,8 +34,6 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
     app.MapOpenApi();
 }
-
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

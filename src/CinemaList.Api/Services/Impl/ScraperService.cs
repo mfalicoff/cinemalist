@@ -9,11 +9,12 @@ using Microsoft.Extensions.Logging;
 
 namespace CinemaList.Api.Services.Impl;
 
-public class ScraperService(IEnumerable<Scraper.Scrapers.Scraper> scrapers, IIMBDService imbdService, IFIlmRepository filmRepository, ILogger<ScraperService> logger): IScraperService
+public class ScraperService(IEnumerable<Scraper.Scrapers.Scraper> scrapers, IMovieService movieService, IFIlmRepository filmRepository, ILogger<ScraperService> logger): IScraperService
 {
     private readonly IEnumerable<Scraper.Scrapers.Scraper> _scrapers = scrapers;
 
-    private readonly IIMBDService _imbdService = imbdService;
+    private readonly IMovieService _movieService = movieService;
+
     private readonly IFIlmRepository _filmRepository = filmRepository;
 
     private readonly ILogger<ScraperService> _logger = logger;
@@ -58,13 +59,13 @@ public class ScraperService(IEnumerable<Scraper.Scrapers.Scraper> scrapers, IIMB
         {
             try
             {
-                OmdbMovie? omdbMovie = await _imbdService.GetSearchMovie(scrapedFilm, cancellationToken);
+                Film? film = await _movieService.FetchMovieMetadata(scrapedFilm, cancellationToken);
                 
-                if (omdbMovie == null) continue;
                 
-                Film film = Film.FromScrapedFilmAndIMDBId(scrapedFilm, omdbMovie);
+                if (film == null) continue;
+                
                 correlatedFilms.Add(film);
-                _logger.LogInformation("Correlated film {FilmTitle} with OMDB ID {OmdbID}", scrapedFilm.Title, omdbMovie.imdbID);
+                _logger.LogInformation("Correlated film {FilmTitle} with OMDB ID {OmdbID}", scrapedFilm.Title, film.ImdbId);
             }
             catch (Exception ex)
             {

@@ -21,7 +21,6 @@
         return films.filter(
             (film) =>
                 film.title.toLowerCase().includes(query) ||
-                film.director?.toLowerCase().includes(query) ||
                 film.country?.toLowerCase().includes(query) ||
                 film.year?.includes(query),
         );
@@ -160,14 +159,6 @@
                             >
                                 {film.title}
                             </h3>
-                            {#if film.director}
-                                <p
-                                    class="text-sm text-gray-600 mb-1 line-clamp-1"
-                                    title={film.director}
-                                >
-                                    👤 {film.director}
-                                </p>
-                            {/if}
                             <div
                                 class="flex items-center gap-2 text-xs text-gray-500"
                             >
@@ -177,6 +168,13 @@
                                 {#if film.country}
                                     <span>🌍 {film.country}</span>
                                 {/if}
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span
+                                    >{film.isInRadarr
+                                        ? "In Radarr: ✅"
+                                        : "In Radarr: ❌"}</span
+                                >
                             </div>
                         </div>
                     </div>

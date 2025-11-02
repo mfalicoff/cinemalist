@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -8,26 +9,16 @@ public class Film
     [BsonId]
     [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
     [AllowNull]
-    public string Id { get; set; }
-    public required string Title { get; set; }
-    public required string IMBDId { get; set; }
+    public string Id { get; set; } = null!;
+    public required string Title { get; set; } = string.Empty;
+    public required string ImdbId { get; set; } = string.Empty;
+    
+    public required string TmdbId { get; set; } = string.Empty;
+    
+    public bool IsInRadarr { get; set; } = false;
 
-    public string? Director { get; set; }
     public string? Country { get; set; }
     public string? Year { get; set; }
     
-    public string? PosterUrl { get; set; }
-    
-    public static Film FromScrapedFilmAndIMDBId(ScrapedFilm scrapedFilm, OmdbMovie omdbMovie)
-    {
-        return new Film
-        {
-            Title = scrapedFilm.Title!,
-            IMBDId = omdbMovie.imdbID,
-            Director = scrapedFilm.Director,
-            Country = scrapedFilm.Country,
-            Year = scrapedFilm.Year,
-            PosterUrl = omdbMovie.Poster
-        };
-    }
+    public string? PosterUrl { get; init; }
 }

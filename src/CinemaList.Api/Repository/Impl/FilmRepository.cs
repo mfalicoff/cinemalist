@@ -19,20 +19,28 @@ public class FilmRepository(IMongoCollection<Film> collection): IFIlmRepository
     public async Task UpsertFilms(List<Film> films, CancellationToken cancellationToken = default)
     {
         List<WriteModel<Film>> bulkOps = (from film in films
-                let filter = Builders<Film>.Filter.Eq(f => f.IMBDId, film.IMBDId)
+                let filter = Builders<Film>.Filter.Eq(f => f.ImdbId, film.ImdbId)
                 let update = Builders<Film>.Update.Set(f => f.Title, film.Title)
                     .Set(f => f.Country, film.Country)
                     .Set(f => f.Year, film.Year)
-                    .Set(f => f.Director, film.Director)
                     .Set(f => f.PosterUrl, film.PosterUrl)
+                    .Set(f => f.TmdbId, film.TmdbId)
+                    .Set(f => f.IsInRadarr, film.IsInRadarr)
                 select new UpdateOneModel<Film>(filter, update) { IsUpsert = true }).Cast<WriteModel<Film>>()
             .ToList();
         
         await _collection.BulkWriteAsync(bulkOps, cancellationToken: cancellationToken);
     }
 
+    public Task UpdateFilmRadarrStatus(string tmdbId, bool isInRadarr, CancellationToken cancellationToken = default)
+    {
+        FilterDefinition<Film>? filter = Builders<Film>.Filter.Eq(f => f.TmdbId, tmdbId);
+        UpdateDefinition<Film>? update = Builders<Film>.Update.Set(f => f.IsInRadarr, isInRadarr);
+        return _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+    }
+
     public async Task<Film> GetFilmById(string id, CancellationToken cancellationToken = default)
     {
-        return await _collection.Find(f => f.IMBDId == id).FirstOrDefaultAsync(cancellationToken);
+        return await _collection.Find(f => f.ImdbId == id).FirstOrDefaultAsync(cancellationToken);
     }
 }

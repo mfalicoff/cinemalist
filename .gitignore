@@ -138,3 +138,5 @@ _NCrunch*
 # Local configuration overrides
 **/appsettings.override.json
 
+
+*.md

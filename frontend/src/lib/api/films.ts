@@ -33,3 +33,26 @@ export async function fetchFilmById(imdbId: string): Promise<Film | null> {
     throw error;
   }
 }
+
+export async function addToRadarr(tmdbId: string): Promise<void> {
+  try {
+    const response = await fetch(
+      `${PUBLIC_API_URL}/api/films/radarr/${tmdbId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to add film to Radarr: ${response.statusText}`);
+    }
+
+    console.log("Film added to Radarr:", tmdbId);
+  } catch (error) {
+    console.error("Error adding film to Radarr:", error);
+    throw error;
+  }
+}

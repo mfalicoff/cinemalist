@@ -1,0 +1,45 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cinemalist-api:latest
+    container_name: cinemalist-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      # Inject mongo connection string pointing to the mongo service
+      MONGO_CONNECTION_STRING: mongodb://mongo:27017
+    ports:
+      - "5104:8080"  # Map container's HTTP port to local dev port from launchSettings
+    depends_on:
+      - mongo
+
+  mongoku:
+    image: huggingface/mongoku:latest
+    container_name: cinemalist-mongoku
+    environment:
+      # Provide full connection string explicitly so Mongoku does not fall back to localhost
+      MONGOKU_DEFAULT_URI: mongodb://mongo:27017/cinemalist
+      # (Optional) also set discrete values in case image version prefers them
+      MONGOKU_DEFAULT_HOST: mongo
+      MONGOKU_DEFAULT_PORT: 27017
+      MONGOKU_DEFAULT_DB: cinemalist
+    ports:
+      - "3100:3100"
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    
+  mongo:
+    image: mongo:8.0
+    container_name: cinemalist-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: cinemalist
+
+volumes:
+  mongo-data:

@@ -20,6 +20,15 @@ public interface IFIlmRepository
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task UpsertFilms(List<Film> films, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Update the Radarr status of a film.
+    /// </summary>
+    /// <param name="tmdbId"></param>
+    /// <param name="isInRadarr"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task UpdateFilmRadarrStatus(string tmdbId, bool isInRadarr, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get a film by its ID from the data store.
