@@ -152,6 +152,9 @@ public class ScraperService(
             scraperBlock.Complete();
             await persistBlock.Completion;
 
+            // Finalize scraper history (single entry per scraper for the entire run)
+            await persistenceStage.FinalizeScraperHistoryAsync(cancellationToken);
+
             // Finalize metrics
             metrics.EndTime = DateTime.UtcNow;
 

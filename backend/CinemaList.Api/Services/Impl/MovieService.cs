@@ -111,16 +111,7 @@ public class MovieService(RadarrClient radarrClient, TMDbClient tmdbClient, IOpt
     {
         SearchContainer<SearchMovie>? response = await _tmDbClient.SearchMovieAsync(scrapedFilm.Title, year: int.Parse(scrapedFilm.Year ?? "0"), includeAdult: true, cancellationToken: cancellationToken);
             
-        return response is { Results.Count: > 0 } ? response.Results.FirstOrDefault(x => x.Title.Equals(scrapedFilm.Title)) : null;
-    }
-    
-    private async Task<RadarrMovie?> FetchRadarrMetadata(string imdbId, CancellationToken cancellationToken)
-    {
-        HttpResponseMessage response = await _radarrClient.Client.GetAsync($"api/v3/movie/lookup/imdb?imdbId={imdbId}", cancellationToken);
-        if (!response.IsSuccessStatusCode) return null;
-        
-        string stringResponse = await response.Content.ReadAsStringAsync(cancellationToken);
-        return JsonSerializer.Deserialize<RadarrMovie>(stringResponse);
+        return response is { Results.Count: > 0 } ? response.Results.First() : null;
     }
     
     private async Task<bool> IsFilmInRadarrAsync(string tmdbId, CancellationToken cancellationToken)

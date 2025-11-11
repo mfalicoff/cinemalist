@@ -11,12 +11,8 @@ using MongoDB.Driver;
 
 namespace CinemaList.Scraper.Scrapers;
 
-public class CinemaModerneScraper(HttpClient httpClient, IMongoCollection<ScraperHistoryEntity> collection): Scraper
+public class CinemaModerneScraper(HttpClient httpClient, IMongoCollection<ScraperHistoryEntity> collection): Scraper(collection, httpClient)
 {
-    private readonly HttpClient _httpClient = httpClient;
-    
-    private readonly IMongoCollection<ScraperHistoryEntity> _collection = collection;
-
     /// <summary>
     /// Contains all HTML selectors and CSS classes used for scraping the Cinema Moderne website.
     /// </summary>
@@ -36,7 +32,7 @@ public class CinemaModerneScraper(HttpClient httpClient, IMongoCollection<Scrape
 
     public override async Task<List<ScrapedFilm>> Scrape(CancellationToken cancellationToken = default)
     {
-        string html = await _httpClient.GetStringAsync("#cinema-en-salle", cancellationToken);
+        string html = await Client.GetStringAsync("#cinema-en-salle", cancellationToken);
         
         List<ScrapedFilm> films = [];
         HtmlDocument doc = new();
@@ -60,27 +56,30 @@ public class CinemaModerneScraper(HttpClient httpClient, IMongoCollection<Scrape
         return films;
     }
 
-    public override async Task<bool> ShouldRunScraper(CancellationToken cancellationToken = default)
-    {
-        DateTime oneWeekAgo = DateTime.UtcNow.AddDays(-1);
-        FilterDefinition<ScraperHistoryEntity> filter =
-            Builders<ScraperHistoryEntity>.Filter.Gt(x => x.ScrapeDate, oneWeekAgo) &
-            Builders<ScraperHistoryEntity>.Filter.Eq(x => x.Source, _httpClient.BaseAddress?.ToString());
-        
-        return await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken) == 0;
-
-    }
-
     public override async Task PersistRunAsync(List<Film> films, CancellationToken cancellationToken = default)
     {
+        // Create dictionary, ignoring duplicate titles (keep first occurrence)
+        Dictionary<string, string> moviesScraped = new();
+        
+        foreach (Film film in films)
+        {
+            string title = film.Title.ToString();
+            
+            // Only add if title not already in dictionary
+            if (!moviesScraped.ContainsKey(title))
+            {
+                moviesScraped[title] = film.TmdbId;
+            }
+        }
+        
         ScraperHistoryEntity history = new()
         {
             ScrapeDate = DateTime.UtcNow,
-            Source = _httpClient.BaseAddress?.ToString() ?? "CinemaModerne",
-            MoviesScraped = new Dictionary<string, string>(films.Select(x => new KeyValuePair<string, string>(x.Title.ToString(), x.TmdbId)))
+            Source = Client.BaseAddress?.ToString() ?? "CinemaModerne",
+            MoviesScraped = moviesScraped
         };
 
-        await _collection.InsertOneAsync(history, new InsertOneOptions(), cancellationToken);
+        await Collection.InsertOneAsync(history, new InsertOneOptions(), cancellationToken);
     }
     
     private ScrapedFilm ExtractFilmFromCard(HtmlNode card)

@@ -23,10 +23,19 @@ public static class ServiceCollectionExtensions
     {
         services.AddHostedService<ScraperInitializerService>();
         services.AddScoped<IScraperService, ScraperService>();
-        services.AddHttpClient<Scraper.Scrapers.Scraper, CinemaModerneScraper>(options =>
+
+        services.AddHttpClient<CinemaModerneScraper>(options =>
         {
             options.BaseAddress = new Uri("https://www.cinemamoderne.com");
         });
+
+        services.AddHttpClient<CinemaBeaubienScraper>(options =>
+        {
+            options.BaseAddress = new Uri("https://cinemacinema.ca");
+        });
+
+        services.AddTransient<Scraper.Scrapers.Scraper>(sp => sp.GetRequiredService<CinemaModerneScraper>());
+        services.AddTransient<Scraper.Scrapers.Scraper>(sp => sp.GetRequiredService<CinemaBeaubienScraper>());
 
         services.AddSingleton<IMongoClient>(sp =>
         {

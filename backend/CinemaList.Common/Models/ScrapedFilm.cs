@@ -12,8 +12,6 @@ public record ScrapedFilm
 
     public bool ShouldBeAdded()
     {
-        return !string.IsNullOrEmpty(Title) &&
-               !string.IsNullOrEmpty(Director) &&
-               !string.IsNullOrEmpty(Year);
+        return !string.IsNullOrEmpty(Title);
     }
 }
