@@ -10,7 +10,7 @@ public record RadarrMovie
 
     [JsonPropertyName("originalLanguage")]
     public Language? OriginalLanguage { get; init; }
-    
+
     [JsonPropertyName("overview")]
     public string Overview { get; init; } = string.Empty;
 
@@ -77,9 +77,12 @@ public record Ratings
 
 public record Rating
 {
-    [JsonPropertyName("votes")] public int Votes { get; init; }
+    [JsonPropertyName("votes")]
+    public int Votes { get; init; }
 
-    [JsonPropertyName("value")] public double Value { get; init; }
+    [JsonPropertyName("value")]
+    public double Value { get; init; }
 
-    [JsonPropertyName("type")] public string Type { get; init; } = string.Empty;
+    [JsonPropertyName("type")]
+    public string Type { get; init; } = string.Empty;
 }

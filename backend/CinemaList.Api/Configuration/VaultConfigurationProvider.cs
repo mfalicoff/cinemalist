@@ -32,21 +32,27 @@ public class VaultConfigurationSource : IConfigurationSource
 public class VaultConfigurationProvider(VaultSettings vaultSettings) : ConfigurationProvider
 {
     private readonly VaultSettings _vaultSettings = vaultSettings;
-    
+
     private static readonly ResiliencePipeline RetryPipeline = new ResiliencePipelineBuilder()
-        .AddRetry(new RetryStrategyOptions
-        {
-            ShouldHandle = new PredicateBuilder().Handle<Exception>(ex => ex.Message.Contains("rate-limited", StringComparison.OrdinalIgnoreCase)),
-            MaxRetryAttempts = 5,
-            Delay = TimeSpan.FromMilliseconds(100),
-            BackoffType = DelayBackoffType.Exponential,
-            UseJitter = true,
-            OnRetry = args =>
+        .AddRetry(
+            new RetryStrategyOptions
             {
-                Console.WriteLine($"Rate limited while loading Vault secret. Retrying in {args.RetryDelay.TotalMilliseconds}ms (attempt {args.AttemptNumber + 1})");
-                return default;
+                ShouldHandle = new PredicateBuilder().Handle<Exception>(ex =>
+                    ex.Message.Contains("rate-limited", StringComparison.OrdinalIgnoreCase)
+                ),
+                MaxRetryAttempts = 5,
+                Delay = TimeSpan.FromMilliseconds(100),
+                BackoffType = DelayBackoffType.Exponential,
+                UseJitter = true,
+                OnRetry = args =>
+                {
+                    Console.WriteLine(
+                        $"Rate limited while loading Vault secret. Retrying in {args.RetryDelay.TotalMilliseconds}ms (attempt {args.AttemptNumber + 1})"
+                    );
+                    return default;
+                },
             }
-        })
+        )
         .Build();
 
     public override void Load()
@@ -83,12 +89,14 @@ public class VaultConfigurationProvider(VaultSettings vaultSettings) : Configura
         {
             Secret<SecretData> secret = await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(
                 path: secretPath,
-                mountPoint: _vaultSettings.MountPath);
+                mountPoint: _vaultSettings.MountPath
+            );
 
-            if (secret?.Data?.Data == null) return;
-        
+            if (secret?.Data?.Data == null)
+                return;
+
             IDictionary<string, object> data = secret.Data.Data;
-            
+
             foreach (KeyValuePair<string, object> kvp in data)
             {
                 // Add directly to configuration using the key from Vault
@@ -100,15 +108,21 @@ public class VaultConfigurationProvider(VaultSettings vaultSettings) : Configura
 
     private async Task LoadAllSecretsFromMountAsync(IVaultClient vaultClient)
     {
-        Secret<ListInfo> listResponse = await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretPathsAsync(
-            path: string.Empty,
-            mountPoint: _vaultSettings.MountPath
-        );
+        Secret<ListInfo> listResponse =
+            await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretPathsAsync(
+                path: string.Empty,
+                mountPoint: _vaultSettings.MountPath
+            );
 
-        if (listResponse?.Data?.Keys == null) return;
+        if (listResponse?.Data?.Keys == null)
+            return;
 
         // Process secrets sequentially to avoid overwhelming Vault with concurrent requests
-        foreach (string secretPath in listResponse.Data.Keys.Where(secretPath => !secretPath.EndsWith('/')))
+        foreach (
+            string secretPath in listResponse.Data.Keys.Where(secretPath =>
+                !secretPath.EndsWith('/')
+            )
+        )
         {
             try
             {

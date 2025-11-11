@@ -13,7 +13,10 @@ public class OmdbResponse
     public string TotalResults { get; set; }
     public string Response { get; set; }
 
-    public static async Task<OmdbResponse?> CreateFromResponse(HttpResponseMessage response, CancellationToken cancellationToken = default)
+    public static async Task<OmdbResponse?> CreateFromResponse(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken = default
+    )
     {
         string jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
         return JsonSerializer.Deserialize<OmdbResponse>(jsonResponse);
@@ -23,7 +26,7 @@ public class OmdbResponse
 public record OmdbMovie
 {
     public required string Title { get; set; }
-    
+
     [JsonPropertyName("imdbID")]
     public required string ImdbId { get; set; }
 }

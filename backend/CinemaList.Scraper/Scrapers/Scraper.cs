@@ -35,9 +35,11 @@ public abstract class Scraper(IMongoCollection<ScraperHistoryEntity> collection,
         DateTime oneDayAgo = DateTime.UtcNow.AddDays(-1);
         FilterDefinition<ScraperHistoryEntity> filter = Builders<ScraperHistoryEntity>.Filter.And(
             Builders<ScraperHistoryEntity>.Filter.Gt(x => x.ScrapeDate, oneDayAgo),
-            Builders<ScraperHistoryEntity>.Filter.Eq(x => x.Source, Client.BaseAddress?.ToString()));
+            Builders<ScraperHistoryEntity>.Filter.Eq(x => x.Source, Client.BaseAddress?.ToString())
+        );
 
-        return await Collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken) == 0;
+        return await Collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken)
+            == 0;
     }
 
     /// <summary>
@@ -46,5 +48,8 @@ public abstract class Scraper(IMongoCollection<ScraperHistoryEntity> collection,
     /// <param name="films">The list of fully enriched films to persist.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A task representing the asynchronous persist operation.</returns>
-    public abstract Task PersistRunAsync(List<Film> films, CancellationToken cancellationToken = default);
+    public abstract Task PersistRunAsync(
+        List<Film> films,
+        CancellationToken cancellationToken = default
+    );
 }

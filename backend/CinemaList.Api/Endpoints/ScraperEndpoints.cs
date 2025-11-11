@@ -20,17 +20,21 @@ public static class ScraperEndpoints
     {
         app.MapGroup("/api/scraper").WithTags("Scraper").MapEndpoints();
     }
-    
+
     private static void MapEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/history", GetScraperHistory)
             .WithName("GetScraperHistory")
             .WithDescription("Get scraper history from the data store.");
     }
-    
-    private static async Task<Results<Ok<ScraperResult>, ProblemHttpResult>> GetScraperHistory(IMongoCollection<ScraperHistoryEntity> scraperHistoryCollection)
+
+    private static async Task<Results<Ok<ScraperResult>, ProblemHttpResult>> GetScraperHistory(
+        IMongoCollection<ScraperHistoryEntity> scraperHistoryCollection
+    )
     {
-        List<ScraperHistoryEntity>? history = await scraperHistoryCollection.Find(_ => true).ToListAsync();
+        List<ScraperHistoryEntity>? history = await scraperHistoryCollection
+            .Find(_ => true)
+            .ToListAsync();
         return TypedResults.Ok(new ScraperResult { Result = history });
     }
 }

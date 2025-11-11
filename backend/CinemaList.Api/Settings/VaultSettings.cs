@@ -10,4 +10,3 @@ public class VaultSettings
     public string MountPath { get; set; } = "kv";
     public string SecretPath { get; set; } = string.Empty;
 }
-

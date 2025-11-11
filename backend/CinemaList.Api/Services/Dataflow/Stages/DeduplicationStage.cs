@@ -12,12 +12,12 @@ namespace CinemaList.Api.Services.Dataflow.Stages;
 /// Pipeline stage that deduplicates films based on title and year.
 /// Filters out duplicate films to avoid redundant OMDB API calls.
 /// </summary>
-public class DeduplicationStage(
-    PipelineMetrics metrics,
-    ILogger<DeduplicationStage> logger)
+public class DeduplicationStage(PipelineMetrics metrics, ILogger<DeduplicationStage> logger)
 {
-    private readonly PipelineMetrics _metrics = metrics ?? throw new ArgumentNullException(nameof(metrics));
-    private readonly ILogger<DeduplicationStage> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly PipelineMetrics _metrics =
+        metrics ?? throw new ArgumentNullException(nameof(metrics));
+    private readonly ILogger<DeduplicationStage> _logger =
+        logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly ConcurrentDictionary<string, bool> _seenFilms = new();
 
     /// <summary>
@@ -25,7 +25,8 @@ public class DeduplicationStage(
     /// </summary>
     public TransformBlock<ScrapedFilmItem, DeduplicatedFilm> CreateBlock(
         int boundedCapacity,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         return new TransformBlock<ScrapedFilmItem, DeduplicatedFilm>(
             item => DeduplicateFilm(item),
@@ -33,8 +34,9 @@ public class DeduplicationStage(
             {
                 MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded,
                 BoundedCapacity = boundedCapacity,
-                CancellationToken = cancellationToken
-            });
+                CancellationToken = cancellationToken,
+            }
+        );
     }
 
     /// <summary>
@@ -52,8 +54,12 @@ public class DeduplicationStage(
         if (isDuplicate)
         {
             Interlocked.Increment(ref _metrics.DuplicatesFiltered);
-            _logger.LogDebug("Duplicate film detected: {Title} ({Year}) from {Scraper}",
-                item.Film.Title, item.Film.Year, item.ScraperName);
+            _logger.LogDebug(
+                "Duplicate film detected: {Title} ({Year}) from {Scraper}",
+                item.Film.Title,
+                item.Film.Year,
+                item.ScraperName
+            );
         }
 
         return new DeduplicatedFilm(

@@ -18,10 +18,11 @@ public static class ConfigurationBindingExtensions
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection BindFromConfiguration<TOptions>(
         this IServiceCollection services,
-        IConfiguration configuration) where TOptions : class
+        IConfiguration configuration
+    )
+        where TOptions : class
     {
         services.Configure<TOptions>(configuration.GetSection(typeof(TOptions).Name));
         return services;
     }
 }
-

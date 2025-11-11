@@ -12,15 +12,18 @@ public interface IFilmRepository
     /// </summary>
     /// <returns></returns>
     Task<List<Film>> GetAllFilms();
-    
+
     /// <summary>
     /// Get films by a certain filter
     /// </summary>
     /// <param name="filter"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<Film>> GetFilmsByFilter(FilmFilter filter, CancellationToken cancellationToken = default);
-    
+    Task<List<Film>> GetFilmsByFilter(
+        FilmFilter filter,
+        CancellationToken cancellationToken = default
+    );
+
     /// <summary>
     /// Insert or update films in the data store.
     /// </summary>
@@ -28,7 +31,7 @@ public interface IFilmRepository
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task UpsertFilms(List<Film> films, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Update the Radarr status of a film.
     /// </summary>
@@ -36,7 +39,11 @@ public interface IFilmRepository
     /// <param name="isInRadarr"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task UpdateFilmRadarrStatus(string tmdbId, bool isInRadarr, CancellationToken cancellationToken = default);
+    Task UpdateFilmRadarrStatus(
+        string tmdbId,
+        bool isInRadarr,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get a film by its ID from the data store.
@@ -51,5 +58,5 @@ public enum FilmFilter
 {
     All,
     InRadarr,
-    NotInRadarr
+    NotInRadarr,
 }

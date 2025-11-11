@@ -22,7 +22,10 @@ namespace CinemaList.Scraper.Scrapers;
 /// 4. Build <see cref="ScrapedFilm"/> objects; apply existing ShouldBeAdded() predicate.
 ///    If Year cannot be found, we skip adding unless relaxing predicate in future.
 /// </summary>
-public class CinemaBeaubienScraper(HttpClient httpClient, IMongoCollection<ScraperHistoryEntity> collection) : Scraper(collection, httpClient)
+public class CinemaBeaubienScraper(
+    HttpClient httpClient,
+    IMongoCollection<ScraperHistoryEntity> collection
+) : Scraper(collection, httpClient)
 {
     private static class Endpoints
     {
@@ -31,11 +34,19 @@ public class CinemaBeaubienScraper(HttpClient httpClient, IMongoCollection<Scrap
 
     private static class RegexPatterns
     {
-        public static readonly Regex Year = new(@"(?<!\d)(19|20)\d{2}(?!\d)", RegexOptions.Compiled);
-        public static readonly Regex DurationMinutes = new(@"(?<!\d)(\d{2,3})(?:\s*min|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        public static readonly Regex Year = new(
+            @"(?<!\d)(19|20)\d{2}(?!\d)",
+            RegexOptions.Compiled
+        );
+        public static readonly Regex DurationMinutes = new(
+            @"(?<!\d)(\d{2,3})(?:\s*min|$)",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase
+        );
     }
 
-    public override async Task<List<ScrapedFilm>> Scrape(CancellationToken cancellationToken = default)
+    public override async Task<List<ScrapedFilm>> Scrape(
+        CancellationToken cancellationToken = default
+    )
     {
         string html = await Client.GetStringAsync(Endpoints.ListingPath, cancellationToken);
         HtmlDocument doc = new();
@@ -43,21 +54,26 @@ public class CinemaBeaubienScraper(HttpClient httpClient, IMongoCollection<Scrap
 
         // The page appears to be SSR + hydrated (Svelte-style comment markers) and anchor text may be empty.
         // We look for <a> tags with href containing "/fr/films/" and extract the title from the img alt attribute.
-        HtmlNodeCollection? anchorNodes = doc.DocumentNode.SelectNodes("//a[contains(@href, '/fr/films/')]");
+        HtmlNodeCollection? anchorNodes = doc.DocumentNode.SelectNodes(
+            "//a[contains(@href, '/fr/films/')]"
+        );
 
         var filmEntries = new List<(string Title, string Url)>();
         foreach (var anchor in anchorNodes ?? Enumerable.Empty<HtmlNode>())
         {
             string href = anchor.GetAttributeValue("href", "");
-            if (string.IsNullOrWhiteSpace(href) || !href.Contains("/fr/films/")) continue;
-            
+            if (string.IsNullOrWhiteSpace(href) || !href.Contains("/fr/films/"))
+                continue;
+
             // Find img tag within this anchor
             var img = anchor.SelectSingleNode(".//img[@alt]");
-            if (img == null) continue;
-            
+            if (img == null)
+                continue;
+
             string rawTitle = HtmlEntity.DeEntitize(img.GetAttributeValue("alt", "").Trim());
-            if (string.IsNullOrWhiteSpace(rawTitle)) continue;
-            
+            if (string.IsNullOrWhiteSpace(rawTitle))
+                continue;
+
             if (href.StartsWith("/"))
             {
                 href = Client.BaseAddress?.ToString().TrimEnd('/') + href;
@@ -66,19 +82,12 @@ public class CinemaBeaubienScraper(HttpClient httpClient, IMongoCollection<Scrap
         }
 
         // Deduplicate by URL
-        var distinctFilms = filmEntries
-            .GroupBy(x => x.Url)
-            .Select(g => g.First())
-            .ToList();
+        var distinctFilms = filmEntries.GroupBy(x => x.Url).Select(g => g.First()).ToList();
 
         List<ScrapedFilm> films = new();
         foreach (var entry in distinctFilms)
         {
-            ScrapedFilm film = new()
-            {
-                Title = entry.Title,
-                Url = entry.Url
-            };
+            ScrapedFilm film = new() { Title = entry.Title, Url = entry.Url };
 
             await PopulateDetailFieldsAsync(film, cancellationToken);
 
@@ -91,9 +100,13 @@ public class CinemaBeaubienScraper(HttpClient httpClient, IMongoCollection<Scrap
         return films;
     }
 
-    private async Task PopulateDetailFieldsAsync(ScrapedFilm film, CancellationToken cancellationToken)
+    private async Task PopulateDetailFieldsAsync(
+        ScrapedFilm film,
+        CancellationToken cancellationToken
+    )
     {
-        if (string.IsNullOrEmpty(film.Url)) return;
+        if (string.IsNullOrEmpty(film.Url))
+            return;
 
         try
         {
@@ -106,7 +119,8 @@ public class CinemaBeaubienScraper(HttpClient httpClient, IMongoCollection<Scrap
             if (h1 != null)
             {
                 var detailTitle = HtmlEntity.DeEntitize(h1.InnerText).Trim();
-                if (!string.IsNullOrWhiteSpace(detailTitle)) film.Title = detailTitle;
+                if (!string.IsNullOrWhiteSpace(detailTitle))
+                    film.Title = detailTitle;
             }
 
             // Director(s) - find label 'Réalisation' then following siblings text.
@@ -119,7 +133,8 @@ public class CinemaBeaubienScraper(HttpClient httpClient, IMongoCollection<Scrap
             if (string.IsNullOrEmpty(film.Year))
             {
                 // Prefer within credits section near Director.
-                string creditsText = CollectSectionText(doc, "Crédits") ?? doc.DocumentNode.InnerText;
+                string creditsText =
+                    CollectSectionText(doc, "Crédits") ?? doc.DocumentNode.InnerText;
                 var match = RegexPatterns.Year.Match(creditsText);
                 if (match.Success)
                 {
@@ -137,12 +152,15 @@ public class CinemaBeaubienScraper(HttpClient httpClient, IMongoCollection<Scrap
     {
         // Try: exact text node, then following sibling(s). This is heuristic due to unknown markup.
         // 1. Find any element whose normalized text equals the label.
-        var labelNode = doc.DocumentNode.SelectSingleNode($"//*[normalize-space(text())='{label}']");
-        if (labelNode == null) return null;
+        var labelNode = doc.DocumentNode.SelectSingleNode(
+            $"//*[normalize-space(text())='{label}']"
+        );
+        if (labelNode == null)
+            return null;
 
         // 2. Candidate values: following siblings until next label or empty.
-        var siblings = labelNode.ParentNode?.ChildNodes
-            .SkipWhile(n => n != labelNode)
+        var siblings = labelNode
+            .ParentNode?.ChildNodes.SkipWhile(n => n != labelNode)
             .Skip(1) // skip the label itself
             .TakeWhile(n => !IsLabelNode(n))
             .Where(n => !string.IsNullOrWhiteSpace(n.InnerText.Trim()))
@@ -157,53 +175,71 @@ public class CinemaBeaubienScraper(HttpClient httpClient, IMongoCollection<Scrap
             return null;
         }
 
-        string combined = string.Join(", ", siblings.Select(s => HtmlEntity.DeEntitize(s.InnerText.Trim())));
+        string combined = string.Join(
+            ", ",
+            siblings.Select(s => HtmlEntity.DeEntitize(s.InnerText.Trim()))
+        );
         return string.IsNullOrWhiteSpace(combined) ? null : combined;
     }
 
     private static bool IsLabelNode(HtmlNode node)
     {
-        if (node == null) return false;
+        if (node == null)
+            return false;
         string text = node.InnerText.Trim();
-        return text is "Réalisation" or "Pays" or "Langue" or "Durée" or "Crédits" or "Synopsis" or "Genre";
+        return text
+            is "Réalisation"
+                or "Pays"
+                or "Langue"
+                or "Durée"
+                or "Crédits"
+                or "Synopsis"
+                or "Genre";
     }
 
     private static string? CollectSectionText(HtmlDocument doc, string sectionHeader)
     {
-        var headerNode = doc.DocumentNode.SelectSingleNode($"//*[normalize-space(text())='{sectionHeader}']");
-        if (headerNode == null) return null;
+        var headerNode = doc.DocumentNode.SelectSingleNode(
+            $"//*[normalize-space(text())='{sectionHeader}']"
+        );
+        if (headerNode == null)
+            return null;
         // Collect text from following siblings until next header.
-        var texts = headerNode.ParentNode?.ChildNodes
-            .SkipWhile(n => n != headerNode)
-            .Skip(1)
-            .TakeWhile(n => !IsLabelNode(n))
-            .Select(n => n.InnerText.Trim())
-            .Where(t => !string.IsNullOrWhiteSpace(t)) ?? Enumerable.Empty<string>();
+        var texts =
+            headerNode
+                .ParentNode?.ChildNodes.SkipWhile(n => n != headerNode)
+                .Skip(1)
+                .TakeWhile(n => !IsLabelNode(n))
+                .Select(n => n.InnerText.Trim())
+                .Where(t => !string.IsNullOrWhiteSpace(t)) ?? Enumerable.Empty<string>();
         var combined = string.Join(" ", texts);
         return string.IsNullOrWhiteSpace(combined) ? null : combined;
     }
 
-    public override async Task PersistRunAsync(List<Film> films, CancellationToken cancellationToken = default)
+    public override async Task PersistRunAsync(
+        List<Film> films,
+        CancellationToken cancellationToken = default
+    )
     {
         // Create dictionary, ignoring duplicate titles (keep first occurrence)
         Dictionary<string, string> moviesScraped = new();
-        
+
         foreach (Film film in films)
         {
             string title = film.Title.ToString();
-            
+
             // Only add if title not already in dictionary
             if (!moviesScraped.ContainsKey(title))
             {
                 moviesScraped[title] = film.TmdbId;
             }
         }
-        
+
         ScraperHistoryEntity history = new()
         {
             ScrapeDate = DateTime.UtcNow,
             Source = Client.BaseAddress?.ToString() ?? "CinemaBeaubien",
-            MoviesScraped = moviesScraped
+            MoviesScraped = moviesScraped,
         };
 
         await Collection.InsertOneAsync(history, new InsertOneOptions(), cancellationToken);

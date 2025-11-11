@@ -12,9 +12,11 @@ public interface IMovieService
     /// <param name="scrapedFilm"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Film?> FetchMovieMetadata(ScrapedFilm scrapedFilm, CancellationToken cancellationToken = default);
-    
-    
+    Task<Film?> FetchMovieMetadata(
+        ScrapedFilm scrapedFilm,
+        CancellationToken cancellationToken = default
+    );
+
     /// <summary>
     /// Adds movie to radarr by the given TMDB id.
     /// </summary>

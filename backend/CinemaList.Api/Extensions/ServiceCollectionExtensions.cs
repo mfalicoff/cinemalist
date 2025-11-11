@@ -3,9 +3,9 @@ using CinemaList.Api.Clients;
 using CinemaList.Api.HostedServices;
 using CinemaList.Api.Repository;
 using CinemaList.Api.Repository.Impl;
-using CinemaList.Api.Settings;
 using CinemaList.Api.Services;
 using CinemaList.Api.Services.Impl;
+using CinemaList.Api.Settings;
 using CinemaList.Common.Models;
 using CinemaList.Scraper.Models;
 using CinemaList.Scraper.Scrapers;
@@ -34,33 +34,43 @@ public static class ServiceCollectionExtensions
             options.BaseAddress = new Uri("https://cinemacinema.ca");
         });
 
-        services.AddTransient<Scraper.Scrapers.Scraper>(sp => sp.GetRequiredService<CinemaModerneScraper>());
-        services.AddTransient<Scraper.Scrapers.Scraper>(sp => sp.GetRequiredService<CinemaBeaubienScraper>());
+        services.AddTransient<Scraper.Scrapers.Scraper>(sp =>
+            sp.GetRequiredService<CinemaModerneScraper>()
+        );
+        services.AddTransient<Scraper.Scrapers.Scraper>(sp =>
+            sp.GetRequiredService<CinemaBeaubienScraper>()
+        );
 
         services.AddSingleton<IMongoClient>(sp =>
         {
-            MongoDbSettings mongoSettings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+            MongoDbSettings mongoSettings = sp.GetRequiredService<
+                IOptions<MongoDbSettings>
+            >().Value;
 
             if (string.IsNullOrEmpty(mongoSettings.ConnectionString))
             {
                 throw new InvalidOperationException(
-                    "MongoDB connection string not found. Configure it in MongoDbSettings:ConnectionString or store it in Vault as 'ConnectionString'.");
+                    "MongoDB connection string not found. Configure it in MongoDbSettings:ConnectionString or store it in Vault as 'ConnectionString'."
+                );
             }
-            
+
             return new MongoClient(mongoSettings.ConnectionString);
         });
 
         services.AddSingleton<IMongoDatabase>(serviceProvider =>
         {
-            MongoDbSettings mongoSettings = serviceProvider.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+            MongoDbSettings mongoSettings = serviceProvider
+                .GetRequiredService<IOptions<MongoDbSettings>>()
+                .Value;
             IMongoClient mongoClient = serviceProvider.GetRequiredService<IMongoClient>();
 
             if (string.IsNullOrEmpty(mongoSettings.DatabaseName))
             {
                 throw new InvalidOperationException(
-                    "MongoDB database name not found. Configure it in MongoDbSettings:DatabaseName or store it in Vault as 'DatabaseName'.");
+                    "MongoDB database name not found. Configure it in MongoDbSettings:DatabaseName or store it in Vault as 'DatabaseName'."
+                );
             }
-            
+
             return mongoClient.GetDatabase(mongoSettings.DatabaseName);
         });
 
@@ -69,24 +79,27 @@ public static class ServiceCollectionExtensions
             IMongoDatabase mongoDatabase = serviceProvider.GetRequiredService<IMongoDatabase>();
             return mongoDatabase.GetCollection<ScraperHistoryEntity>("scraper_history");
         });
-        
+
         services.AddSingleton<IMongoCollection<Film>>(serviceProvider =>
         {
             IMongoDatabase mongoDatabase = serviceProvider.GetRequiredService<IMongoDatabase>();
             return mongoDatabase.GetCollection<Film>("films");
         });
         services.AddTransient<IFilmRepository, FilmRepository>();
-        
+
         return services;
     }
-    
-    public static IServiceCollection AddMovieServices(this IServiceCollection services, IConfiguration configuration)
+
+    public static IServiceCollection AddMovieServices(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         services.AddHostedService<RadarrSynchronizerService>();
-        
+
         TmdbSettings settings = configuration.GetRequiredSection<TmdbSettings>();
-        services.AddSingleton<TMDbClient>( _ => new TMDbClient(settings.ApiKey));
-        
+        services.AddSingleton<TMDbClient>(_ => new TMDbClient(settings.ApiKey));
+
         services.AddHttpClient<RadarrClient>(client =>
         {
             RadarrSettings radarrSettings = configuration.GetRequiredSection<RadarrSettings>();
@@ -94,9 +107,9 @@ public static class ServiceCollectionExtensions
             client.DefaultRequestHeaders.Add("Accept", "application/json");
             client.DefaultRequestHeaders.Add("X-Api-Key", radarrSettings.ApiKey);
         });
-        
+
         services.AddTransient<IMovieService, MovieService>();
-        
+
         return services;
     }
 }

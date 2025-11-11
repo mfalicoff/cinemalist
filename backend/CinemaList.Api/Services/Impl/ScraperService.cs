@@ -27,37 +27,46 @@ public class ScraperService(
     IMemoryCache memoryCache,
     IOptions<DataflowScraperOptions> options,
     ILoggerFactory loggerFactory,
-    ILogger<ScraperService> logger)
-    : IScraperService
+    ILogger<ScraperService> logger
+) : IScraperService
 {
-    private readonly IEnumerable<Scraper.Scrapers.Scraper> _scrapers = scrapers ?? throw new ArgumentNullException(nameof(scrapers));
-    private readonly IMovieService _movieService = movieService ?? throw new ArgumentNullException(nameof(movieService));
-    private readonly IFilmRepository _filmRepository = filmRepository ?? throw new ArgumentNullException(nameof(filmRepository));
-    private readonly IMemoryCache _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
-    private readonly DataflowScraperOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-    private readonly ILogger<ScraperService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly ILoggerFactory _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+    private readonly IEnumerable<Scraper.Scrapers.Scraper> _scrapers =
+        scrapers ?? throw new ArgumentNullException(nameof(scrapers));
+    private readonly IMovieService _movieService =
+        movieService ?? throw new ArgumentNullException(nameof(movieService));
+    private readonly IFilmRepository _filmRepository =
+        filmRepository ?? throw new ArgumentNullException(nameof(filmRepository));
+    private readonly IMemoryCache _memoryCache =
+        memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+    private readonly DataflowScraperOptions _options =
+        options?.Value ?? throw new ArgumentNullException(nameof(options));
+    private readonly ILogger<ScraperService> _logger =
+        logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILoggerFactory _loggerFactory =
+        loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
 
     public async Task ScrapeFilmsAsync(CancellationToken cancellationToken = default)
     {
-        PipelineMetrics metrics = new()
-        {
-            StartTime = DateTime.UtcNow
-        };
+        PipelineMetrics metrics = new() { StartTime = DateTime.UtcNow };
 
         try
         {
-            _logger.LogInformation("Starting dataflow scraper pipeline at {Time}", metrics.StartTime);
+            _logger.LogInformation(
+                "Starting dataflow scraper pipeline at {Time}",
+                metrics.StartTime
+            );
 
             // Create pipeline stages
             ScraperStage scraperStage = new(
                 _scrapers,
                 metrics,
-                _loggerFactory.CreateLogger<ScraperStage>());
+                _loggerFactory.CreateLogger<ScraperStage>()
+            );
 
             DeduplicationStage deduplicationStage = new(
                 metrics,
-                _loggerFactory.CreateLogger<DeduplicationStage>());
+                _loggerFactory.CreateLogger<DeduplicationStage>()
+            );
 
             MovieEnrichmentStage enrichmentStage = new(
                 _movieService,
@@ -66,42 +75,45 @@ public class ScraperService(
                 _options.OmdbRetryCount,
                 _options.CacheExpirationHours,
                 _options.EnableOmdbCaching,
-                _loggerFactory.CreateLogger<MovieEnrichmentStage>());
+                _loggerFactory.CreateLogger<MovieEnrichmentStage>()
+            );
 
             PersistenceStage persistenceStage = new(
                 _scrapers,
                 _filmRepository,
                 metrics,
-                _loggerFactory.CreateLogger<PersistenceStage>());
+                _loggerFactory.CreateLogger<PersistenceStage>()
+            );
 
             // Create dataflow blocks
-            TransformManyBlock<Scraper.Scrapers.Scraper, ScrapedFilmItem> scraperBlock = scraperStage.CreateBlock(
-                _options.MaxScraperParallelism,
-                cancellationToken);
+            TransformManyBlock<Scraper.Scrapers.Scraper, ScrapedFilmItem> scraperBlock =
+                scraperStage.CreateBlock(_options.MaxScraperParallelism, cancellationToken);
 
-            TransformBlock<ScrapedFilmItem, DeduplicatedFilm>? deduplicationBlock = _options.EnableDeduplication
-                ? deduplicationStage.CreateBlock(_options.BoundedCapacity, cancellationToken)
-                : null;
+            TransformBlock<ScrapedFilmItem, DeduplicatedFilm>? deduplicationBlock =
+                _options.EnableDeduplication
+                    ? deduplicationStage.CreateBlock(_options.BoundedCapacity, cancellationToken)
+                    : null;
 
-            TransformBlock<DeduplicatedFilm, EnrichedFilm> enrichmentBlock = enrichmentStage.CreateBlock(
-                _options.MaxOmdbParallelism,
-                _options.BoundedCapacity,
-                cancellationToken);
+            TransformBlock<DeduplicatedFilm, EnrichedFilm> enrichmentBlock =
+                enrichmentStage.CreateBlock(
+                    _options.MaxOmdbParallelism,
+                    _options.BoundedCapacity,
+                    cancellationToken
+                );
 
             BatchBlock<EnrichedFilm> batchBlock = persistenceStage.CreateBatchBlock(
                 _options.BoundedCapacity,
                 _options.BoundedCapacity,
-                cancellationToken);
+                cancellationToken
+            );
 
             ActionBlock<EnrichedFilm[]> persistBlock = persistenceStage.CreatePersistBlock(
                 _options.MaxPersistenceParallelism,
-                cancellationToken);
+                cancellationToken
+            );
 
             // Link pipeline stages
-            DataflowLinkOptions linkOptions = new()
-            {
-                PropagateCompletion = true
-            };
+            DataflowLinkOptions linkOptions = new() { PropagateCompletion = true };
 
             if (_options.EnableDeduplication && deduplicationBlock != null)
             {
@@ -118,13 +130,15 @@ public class ScraperService(
                         Film: item.Film,
                         CacheKey: $"{item.Film.Title?.Trim().ToLowerInvariant()}|{item.Film.Year}",
                         IsDuplicate: false,
-                        ScraperName: item.ScraperName),
+                        ScraperName: item.ScraperName
+                    ),
                     new ExecutionDataflowBlockOptions
                     {
                         MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded,
                         BoundedCapacity = _options.BoundedCapacity,
-                        CancellationToken = cancellationToken
-                    });
+                        CancellationToken = cancellationToken,
+                    }
+                );
 
                 scraperBlock.LinkTo(adapterBlock, linkOptions);
                 adapterBlock.LinkTo(enrichmentBlock, linkOptions);
@@ -134,13 +148,16 @@ public class ScraperService(
             batchBlock.LinkTo(persistBlock, linkOptions);
 
             // Handle batch triggering when scraper completes
-            _ = scraperBlock.Completion.ContinueWith(_ =>
-            {
-                if (!cancellationToken.IsCancellationRequested)
+            _ = scraperBlock.Completion.ContinueWith(
+                _ =>
                 {
-                    batchBlock.TriggerBatch();
-                }
-            }, cancellationToken);
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        batchBlock.TriggerBatch();
+                    }
+                },
+                cancellationToken
+            );
 
             // Post all scrapers to the pipeline
             foreach (Scraper.Scrapers.Scraper scraper in _scrapers)
@@ -179,17 +196,17 @@ public class ScraperService(
     private void LogPerformanceMetrics(PipelineMetrics metrics)
     {
         _logger.LogInformation(
-            "Dataflow Pipeline Performance Metrics\n" +
-            "════════════════════════════════════════\n" +
-            "Duration:             {Duration:mm\\:ss}\n" +
-            "Films Scraped:        {Scraped}\n" +
-            "Duplicates Filtered:  {Duplicates} ({DuplicatePercent:P1})\n" +
-            "Cache Hits:           {CacheHits} ({CacheHitRate:P1})\n" +
-            "OMDB API Calls:       {OmdbCalls}\n" +
-            "OMDB Failures:        {OmdbFailures} ({FailureRate:P1})\n" +
-            "Films Persisted:      {Persisted}\n" +
-            "Throughput:           {Throughput:F2} films/sec\n" +
-            "════════════════════════════════════════",
+            "Dataflow Pipeline Performance Metrics\n"
+                + "════════════════════════════════════════\n"
+                + "Duration:             {Duration:mm\\:ss}\n"
+                + "Films Scraped:        {Scraped}\n"
+                + "Duplicates Filtered:  {Duplicates} ({DuplicatePercent:P1})\n"
+                + "Cache Hits:           {CacheHits} ({CacheHitRate:P1})\n"
+                + "OMDB API Calls:       {OmdbCalls}\n"
+                + "OMDB Failures:        {OmdbFailures} ({FailureRate:P1})\n"
+                + "Films Persisted:      {Persisted}\n"
+                + "Throughput:           {Throughput:F2} films/sec\n"
+                + "════════════════════════════════════════",
             metrics.Duration,
             metrics.TotalScraped,
             metrics.DuplicatesFiltered,
@@ -200,6 +217,7 @@ public class ScraperService(
             metrics.OmdbFailures,
             metrics.OmdbFailureRate,
             metrics.FilmsPersisted,
-            metrics.ThroughputPerSecond);
+            metrics.ThroughputPerSecond
+        );
     }
 }
