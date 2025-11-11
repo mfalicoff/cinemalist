@@ -4,9 +4,9 @@
     "net9.0": {
       "Mazilious.Common": {
         "type": "Direct",
-        "requested": "[0.1.0, )",
-        "resolved": "0.1.0",
-        "contentHash": "V50I9DgfiaSqTjnZ+rulbs1FJHskCQIZRavMhw4zctPIG4YhPsUIB0Owb8PwLUBTDOSekaec5QKGBMDyQAKaEg==",
+        "requested": "[0.2.0, )",
+        "resolved": "0.2.0",
+        "contentHash": "92HVpvtOiSjyK9ysAZ5trvJ/x6ph6CTCITf+J/nr0id6/nFOk5TSY4Zs8V/1lCEHRBtolQds5VQHxLfYFs+hXg==",
         "dependencies": {
           "Microsoft.Extensions.Configuration": "9.0.11",
           "Microsoft.Extensions.Configuration.Binder": "9.0.11",
