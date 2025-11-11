@@ -4,7 +4,6 @@
     <PackageReference Include="Polly" />
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="TMDbLib" />
-    <PackageReference Include="VaultSharp" />
   </ItemGroup>
 
   <ItemGroup>
