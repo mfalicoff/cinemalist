@@ -9,9 +9,11 @@ using CinemaList.Api.Services.Impl;
 using CinemaList.Common.Models;
 using CinemaList.Scraper.Models;
 using CinemaList.Scraper.Scrapers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using TMDbLib.Client;
 
 namespace CinemaList.Api.Extensions;
 
@@ -69,19 +71,16 @@ public static class ServiceCollectionExtensions
         return services;
     }
     
-    public static IServiceCollection AddMovieServices(this IServiceCollection services)
+    public static IServiceCollection AddMovieServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddHostedService<RadarrSynchronizerService>();
         
-        services.AddHttpClient<OmdbClient>( client =>
-        {
-            client.BaseAddress = new Uri("https://www.omdbapi.com/");
-        });
+        TmdbSettings settings = configuration.GetRequiredSection<TmdbSettings>();
+        services.AddSingleton<TMDbClient>( _ => new TMDbClient(settings.ApiKey));
         
         services.AddHttpClient<RadarrClient>(client =>
         {
-            RadarrSettings radarrSettings =
-                services.BuildServiceProvider().GetRequiredService<IOptions<RadarrSettings>>().Value;
+            RadarrSettings radarrSettings = configuration.GetRequiredSection<RadarrSettings>();
             client.BaseAddress = new Uri(radarrSettings.BaseUrl);
             client.DefaultRequestHeaders.Add("Accept", "application/json");
             client.DefaultRequestHeaders.Add("X-Api-Key", radarrSettings.ApiKey);

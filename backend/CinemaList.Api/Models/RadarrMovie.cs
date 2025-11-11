@@ -15,7 +15,7 @@ public record RadarrMovie
     public string Overview { get; init; } = string.Empty;
 
     [JsonPropertyName("images")]
-    public List<Image> Images { get; init; } = new();
+    public List<Image> Images { get; init; } = [];
 
     [JsonPropertyName("remotePoster")]
     public string RemotePoster { get; init; } = string.Empty;

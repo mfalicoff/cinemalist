@@ -26,6 +26,15 @@
         "resolved": "2.10.3",
         "contentHash": "uDJlK7ZcHJgAIbXKB3zf4D/70VVEdsYaN3qwoUSBP3OHrdlLR/cIIYp16OFfX9d4VP29b30Jf6KXF59PvFGG4w=="
       },
+      "TMDbLib": {
+        "type": "Direct",
+        "requested": "[2.3.0, )",
+        "resolved": "2.3.0",
+        "contentHash": "kapjC4/ao8mxJ/G5xcZHYNVFvmAzxwWEN2PDkGbbUzAQVfbf85DsA9AUDTrXahTHYq0R7jwGyARs/y6243EPLg==",
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3"
+        }
+      },
       "VaultSharp": {
         "type": "Direct",
         "requested": "[1.17.5.1, )",
@@ -63,6 +72,11 @@
           "System.Security.AccessControl": "5.0.0",
           "System.Security.Principal.Windows": "5.0.0"
         }
+      },
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
       },
       "Polly.Core": {
         "type": "Transitive",

@@ -12,16 +12,18 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Configuration.ConfigureConfiguration();
 
 builder.Services
-    .BindFromConfiguration<OMDbSettings>(builder.Configuration)
+    .BindFromConfiguration<TmdbSettings>(builder.Configuration)
     .BindFromConfiguration<RadarrSettings>(builder.Configuration)
     .BindFromConfiguration<MongoDbSettings>(builder.Configuration);
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
-builder.Services.AddMovieServices();
+builder.Services.AddMovieServices(builder.Configuration);
 builder.Services.AddScraping();
 
 builder.Services.AddHealthChecks();

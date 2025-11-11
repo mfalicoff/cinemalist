@@ -4,6 +4,7 @@
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Polly" />
         <PackageReference Include="Scalar.AspNetCore" />
+        <PackageReference Include="TMDbLib" />
         <PackageReference Include="VaultSharp" />
     </ItemGroup>
 

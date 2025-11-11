@@ -77,7 +77,7 @@ public class CinemaModerneScraper(HttpClient httpClient, IMongoCollection<Scrape
         {
             ScrapeDate = DateTime.UtcNow,
             Source = _httpClient.BaseAddress?.ToString() ?? "CinemaModerne",
-            MoviesScraped = new Dictionary<string, string>(films.Select(x => new KeyValuePair<string, string>(x.Title.ToString(), x.ImdbId)))
+            MoviesScraped = new Dictionary<string, string>(films.Select(x => new KeyValuePair<string, string>(x.Title.ToString(), x.TmdbId)))
         };
 
         await _collection.InsertOneAsync(history, new InsertOneOptions(), cancellationToken);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -12,20 +13,23 @@ using CinemaList.Api.Repository;
 using CinemaList.Api.Settings;
 using CinemaList.Common.Models;
 using Microsoft.Extensions.Options;
+using TMDbLib.Client;
+using TMDbLib.Objects.General;
+using TMDbLib.Objects.Search;
 
 namespace CinemaList.Api.Services.Impl;
 
-public class MovieService(RadarrClient radarrClient, OmdbClient omdbClient, IOptions<OMDbSettings> omdbSettings, IOptions<RadarrSettings> radarrSettings, IFilmRepository filmRepository): IMovieService
+public class MovieService(RadarrClient radarrClient, TMDbClient tmdbClient, IOptions<RadarrSettings> radarrSettings, IFilmRepository filmRepository, TimeProvider timeProvider): IMovieService
 {
     private readonly RadarrClient _radarrClient = radarrClient;
 
-    private readonly OmdbClient _omdbClient = omdbClient;
+    private readonly TMDbClient _tmDbClient = tmdbClient;
 
     private readonly IFilmRepository _filmRepository = filmRepository;
-
-    private readonly OMDbSettings _omDbSettings = omdbSettings.Value;
     
     private readonly RadarrSettings _radarrSettings = radarrSettings.Value;
+    
+    private readonly TimeProvider _timeProvider = timeProvider;
     
     private record RadarrRequest
     {
@@ -45,23 +49,20 @@ public class MovieService(RadarrClient radarrClient, OmdbClient omdbClient, IOpt
     public async Task<Film?> FetchMovieMetadata(ScrapedFilm scrapedFilm, CancellationToken cancellationToken = default)
     {
         
-        OmdbMovie? omdbMovie = await GetImdbIdFromScrapedFilm(scrapedFilm, cancellationToken);
-        if(omdbMovie is null) return null;
-        
-        RadarrMovie? radarrMovie = await FetchRadarrMetadata(omdbMovie.ImdbId, cancellationToken);
-        if (radarrMovie is null) return null;
+        SearchMovie? searchMovie = await GetImdbIdFromScrapedFilm(scrapedFilm, cancellationToken);
+        if(searchMovie is null) return null;
 
-        bool isInRadarr = await IsFilmInRadarrAsync(radarrMovie.TmdbId.ToString(), cancellationToken);
+        bool isInRadarr = await IsFilmInRadarrAsync(searchMovie.Id.ToString(), cancellationToken);
 
         return new Film()
         {
-            Title = radarrMovie.Title,
-            ImdbId = omdbMovie.ImdbId,
-            TmdbId = radarrMovie.TmdbId.ToString(),
+            Title = searchMovie.Title,
+            TmdbId = searchMovie.Id.ToString(),
             IsInRadarr = isInRadarr,
-            PosterUrl = radarrMovie.Images.FirstOrDefault(p => p.CoverType == "poster")?.RemoteUrl ?? string.Empty,
+            PosterUrl = $"https://image.tmdb.org/t/p/original{searchMovie.PosterPath}",
             Year = scrapedFilm.Year,
-            Country = scrapedFilm.Country
+            Country = scrapedFilm.Country,
+            ScrapedDate = _timeProvider.GetUtcNow().Date
         };
     }
     
@@ -106,19 +107,11 @@ public class MovieService(RadarrClient radarrClient, OmdbClient omdbClient, IOpt
         }
     }
 
-    private async Task<OmdbMovie?> GetImdbIdFromScrapedFilm(ScrapedFilm scrapedFilm, CancellationToken cancellationToken)
+    private async Task<SearchMovie?> GetImdbIdFromScrapedFilm(ScrapedFilm scrapedFilm, CancellationToken cancellationToken)
     {
-        HttpResponseMessage response = await _omdbClient.Client.GetAsync($"?apikey={_omDbSettings.ApiKey}&s={HttpUtility.HtmlEncode(scrapedFilm.Title)}&y={scrapedFilm.Year}", cancellationToken);
-        if (!response.IsSuccessStatusCode) return null;
-        
-        OmdbResponse? omdbResponse = await OmdbResponse.CreateFromResponse(response, cancellationToken);
+        SearchContainer<SearchMovie>? response = await _tmDbClient.SearchMovieAsync(scrapedFilm.Title, year: int.Parse(scrapedFilm.Year ?? "0"), includeAdult: true, cancellationToken: cancellationToken);
             
-        if (omdbResponse is { Response: "True", Search.Count: > 0 })
-        {
-            return omdbResponse.Search.FirstOrDefault(x => x.Title.Equals(scrapedFilm.Title));
-        }
-
-        return null;
+        return response is { Results.Count: > 0 } ? response.Results.FirstOrDefault(x => x.Title.Equals(scrapedFilm.Title)) : null;
     }
     
     private async Task<RadarrMovie?> FetchRadarrMetadata(string imdbId, CancellationToken cancellationToken)
