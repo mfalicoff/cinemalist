@@ -121,16 +121,16 @@
                         <span class="text-2xl">🎞️</span>
                         <div>
                             <p class="text-sm text-gray-500 font-medium">
-                                IMDb ID
+                                Tmdb ID
                             </p>
                             <p class="text-lg text-gray-900 font-mono">
                                 <a
-                                    href="https://www.imdb.com/title/{film.imdbId}"
+                                    href="https://www.themoviedb.org/movie/{film.tmdbId}"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     class="text-blue-400"
                                 >
-                                    {film.imdbId}
+                                    {film.tmdbId}
                                 </a>
                             </p>
                         </div>
