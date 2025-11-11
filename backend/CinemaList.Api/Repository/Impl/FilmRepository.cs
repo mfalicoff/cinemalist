@@ -13,7 +13,7 @@ public class FilmRepository(IMongoCollection<Film> collection): IFilmRepository
 
     public Task<List<Film>> GetAllFilms()
     {
-        return _collection.Find(_ => true).ToListAsync();
+        return _collection.Find(_ => true).SortBy(x => x.Title).ToListAsync();
     }
 
     public async Task<List<Film>> GetFilmsByFilter(FilmFilter filter, CancellationToken cancellationToken = default)
@@ -31,9 +31,7 @@ public class FilmRepository(IMongoCollection<Film> collection): IFilmRepository
     public async Task UpsertFilms(List<Film> films, CancellationToken cancellationToken = default)
     {
         List<WriteModel<Film>> bulkOps = (from film in films
-                let filter = Builders<Film>.Filter.Or(
-                    Builders<Film>.Filter.Eq(f => f.ImdbId, film.ImdbId),
-                    Builders<Film>.Filter.Eq(f => f.TmdbId, film.TmdbId))
+                let filter = Builders<Film>.Filter.Eq(f => f.TmdbId, film.TmdbId)
                 let update = Builders<Film>.Update
                     .Set(f => f.Title, film.Title)
                     .Set(f => f.Country, film.Country)
@@ -56,6 +54,6 @@ public class FilmRepository(IMongoCollection<Film> collection): IFilmRepository
 
     public async Task<Film> GetFilmById(string id, CancellationToken cancellationToken = default)
     {
-        return await _collection.Find(f => f.ImdbId == id).FirstOrDefaultAsync(cancellationToken);
+        return await _collection.Find(f => f.TmdbId == id).FirstOrDefaultAsync(cancellationToken);
     }
 }

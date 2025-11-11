@@ -17,24 +17,24 @@ namespace CinemaList.Api.Services.Dataflow.Stages;
 /// Pipeline stage that enriches films with OMDB and Radarr metadata.
 /// Uses caching to avoid redundant API calls and retry logic for resilience.
 /// </summary>
-public class OmdbEnrichmentStage
+public class MovieEnrichmentStage
 {
     private readonly IMovieService _movieService;
     private readonly IMemoryCache _memoryCache;
     private readonly PipelineMetrics _metrics;
-    private readonly ILogger<OmdbEnrichmentStage> _logger;
+    private readonly ILogger<MovieEnrichmentStage> _logger;
     private readonly AsyncRetryPolicy _retryPolicy;
     private readonly int _cacheExpirationHours;
     private readonly bool _cachingEnabled;
 
-    public OmdbEnrichmentStage(
+    public MovieEnrichmentStage(
         IMovieService movieService,
         IMemoryCache memoryCache,
         PipelineMetrics metrics,
         int retryCount,
         int cacheExpirationHours,
         bool cachingEnabled,
-        ILogger<OmdbEnrichmentStage> logger)
+        ILogger<MovieEnrichmentStage> logger)
     {
         _movieService = movieService ?? throw new ArgumentNullException(nameof(movieService));
         _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
@@ -60,7 +60,7 @@ public class OmdbEnrichmentStage
     }
 
     /// <summary>
-    /// Creates the OMDB enrichment block that enriches films with metadata.
+    /// Creates the TMDB enrichment block that enriches films with metadata.
     /// </summary>
     public TransformBlock<DeduplicatedFilm, EnrichedFilm> CreateBlock(
         int maxDegreeOfParallelism,
@@ -155,7 +155,7 @@ public class OmdbEnrichmentStage
             }
 
             _logger.LogInformation("Enriched film {Title} with IMDB ID {ImdbId}",
-                dedupFilm.Film.Title, enrichedFilm.ImdbId);
+                dedupFilm.Film.Title, enrichedFilm.TmdbId);
 
             return new EnrichedFilm(
                 Film: enrichedFilm,

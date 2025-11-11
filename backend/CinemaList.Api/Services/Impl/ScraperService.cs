@@ -59,14 +59,14 @@ public class ScraperService(
                 metrics,
                 _loggerFactory.CreateLogger<DeduplicationStage>());
 
-            OmdbEnrichmentStage enrichmentStage = new(
+            MovieEnrichmentStage enrichmentStage = new(
                 _movieService,
                 _memoryCache,
                 metrics,
                 _options.OmdbRetryCount,
                 _options.CacheExpirationHours,
                 _options.EnableOmdbCaching,
-                _loggerFactory.CreateLogger<OmdbEnrichmentStage>());
+                _loggerFactory.CreateLogger<MovieEnrichmentStage>());
 
             PersistenceStage persistenceStage = new(
                 _scrapers,
@@ -89,7 +89,7 @@ public class ScraperService(
                 cancellationToken);
 
             BatchBlock<EnrichedFilm> batchBlock = persistenceStage.CreateBatchBlock(
-                _options.BatchSize,
+                _options.BoundedCapacity,
                 _options.BoundedCapacity,
                 cancellationToken);
 

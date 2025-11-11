@@ -1,6 +1,6 @@
 namespace CinemaList.Api.Settings;
 
-public class OMDbSettings
+public class TmdbSettings
 {
     public string ApiKey { get; set; } = string.Empty;
 }
