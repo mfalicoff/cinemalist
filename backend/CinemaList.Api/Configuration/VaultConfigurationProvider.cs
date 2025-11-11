@@ -4,12 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using CinemaList.Api.Settings;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json.Linq;
 using Polly;
 using Polly.Retry;
-using Vault;
-using Vault.Client;
-using Vault.Model;
+using VaultSharp;
+using VaultSharp.V1.AuthMethods;
+using VaultSharp.V1.AuthMethods.Token;
+using VaultSharp.V1.Commons;
 
 namespace CinemaList.Api.Configuration;
 
@@ -58,9 +58,9 @@ public class VaultConfigurationProvider(VaultSettings vaultSettings) : Configura
     {
         try
         {
-            VaultConfiguration config = new(_vaultSettings.Address);
-            VaultClient vaultClient = new(config);
-            vaultClient.SetToken(_vaultSettings.Token);
+            IAuthMethodInfo authMethod = new TokenAuthMethodInfo(_vaultSettings.Token);
+            VaultClientSettings vaultClientSettings = new(_vaultSettings.Address, authMethod);
+            IVaultClient vaultClient = new VaultClient(vaultClientSettings);
 
             if (string.IsNullOrEmpty(_vaultSettings.SecretPath))
             {
@@ -77,42 +77,32 @@ public class VaultConfigurationProvider(VaultSettings vaultSettings) : Configura
         }
     }
 
-    private async Task LoadSecretFromPathAsync(VaultClient vaultClient, string secretPath)
+    private async Task LoadSecretFromPathAsync(IVaultClient vaultClient, string secretPath)
     {
         await RetryPipeline.ExecuteAsync(async cancellationToken =>
         {
-            VaultResponse<KvV2ReadResponse> response = await vaultClient.Secrets.KvV2ReadAsync(
+            Secret<SecretData> secret = await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(
                 path: secretPath,
-                kvV2MountPath: _vaultSettings.MountPath, cancellationToken: cancellationToken);
+                mountPoint: _vaultSettings.MountPath);
 
-            if (response?.Data?.Data == null) return;
+            if (secret?.Data?.Data == null) return;
         
-            object? data = response.Data.Data;
+            IDictionary<string, object> data = secret.Data.Data;
             
-            if (data is JObject jObject)
+            foreach (KeyValuePair<string, object> kvp in data)
             {
-                foreach (JProperty property in jObject.Properties())
-                {
-                    // Add directly to configuration using the key from Vault
-                    // Keys should be in format like "MongoDbSettings:ConnectionString"
-                    Data[property.Name] = property.Value.ToString();
-                }
-            }
-            else if (data is IDictionary<string, object> dictionary)
-            {
-                foreach (KeyValuePair<string, object> kvp in dictionary)
-                {
-                    Data[kvp.Key] = kvp.Value.ToString() ?? string.Empty;
-                }
+                // Add directly to configuration using the key from Vault
+                // Keys should be in format like "MongoDbSettings:ConnectionString"
+                Data[kvp.Key] = kvp.Value?.ToString() ?? string.Empty;
             }
         });
     }
 
-    private async Task LoadAllSecretsFromMountAsync(VaultClient vaultClient)
+    private async Task LoadAllSecretsFromMountAsync(IVaultClient vaultClient)
     {
-        VaultResponse<StandardListResponse> listResponse = await vaultClient.Secrets.KvV2ListAsync(
+        Secret<ListInfo> listResponse = await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretPathsAsync(
             path: string.Empty,
-            kvV2MountPath: _vaultSettings.MountPath
+            mountPoint: _vaultSettings.MountPath
         );
 
         if (listResponse?.Data?.Keys == null) return;
