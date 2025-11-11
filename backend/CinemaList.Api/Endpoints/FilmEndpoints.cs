@@ -22,35 +22,43 @@ public static class FilmEndpoints
     {
         app.MapGroup("/api/films").WithTags("Films").MapEndpoints();
     }
-    
+
     private static void MapEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/all", GetAllFilms)
             .WithName("GetAllFilms")
             .WithDescription("Get all films from the data store.");
-        
+
         app.MapGet("/{id}", GetFilmById)
             .WithName("GetFilmById")
             .WithDescription("Get a film by its ID from the data store.");
-        
+
         app.MapPost("/radarr/{id}", AddToRadarr)
             .WithName("AddFilmToRadarr")
             .WithDescription("Add a film to Radarr by its ID.");
     }
-    
-    private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetAllFilms(IFilmRepository filmRepository)
+
+    private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetAllFilms(
+        IFilmRepository filmRepository
+    )
     {
         List<Film> films = await filmRepository.GetAllFilms();
         return TypedResults.Ok(new FilmResult { Result = films });
     }
-    
-    private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetFilmById(string id, IFilmRepository filmRepository)
+
+    private static async Task<Results<Ok<FilmResult>, ProblemHttpResult>> GetFilmById(
+        string id,
+        IFilmRepository filmRepository
+    )
     {
         Film film = await filmRepository.GetFilmById(id);
         return TypedResults.Ok(new FilmResult { Result = [film] });
     }
-    
-    private static async Task<Results<Ok, ProblemHttpResult>> AddToRadarr(string id, IMovieService movieService)
+
+    private static async Task<Results<Ok, ProblemHttpResult>> AddToRadarr(
+        string id,
+        IMovieService movieService
+    )
     {
         await movieService.AddMovieToRadarr(id, CancellationToken.None);
         return TypedResults.Ok();

@@ -19,12 +19,21 @@ public class PersistenceStage(
     IEnumerable<Scraper.Scrapers.Scraper> scrapers,
     IFilmRepository filmRepository,
     PipelineMetrics metrics,
-    ILogger<PersistenceStage> logger)
+    ILogger<PersistenceStage> logger
+)
 {
-    private readonly IEnumerable<Scraper.Scrapers.Scraper> _scrapers = scrapers ?? throw new ArgumentNullException(nameof(scrapers));
-    private readonly IFilmRepository _filmRepository = filmRepository ?? throw new ArgumentNullException(nameof(filmRepository));
-    private readonly PipelineMetrics _metrics = metrics ?? throw new ArgumentNullException(nameof(metrics));
-    private readonly ILogger<PersistenceStage> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IEnumerable<Scraper.Scrapers.Scraper> _scrapers =
+        scrapers ?? throw new ArgumentNullException(nameof(scrapers));
+    private readonly IFilmRepository _filmRepository =
+        filmRepository ?? throw new ArgumentNullException(nameof(filmRepository));
+    private readonly PipelineMetrics _metrics =
+        metrics ?? throw new ArgumentNullException(nameof(metrics));
+    private readonly ILogger<PersistenceStage> _logger =
+        logger ?? throw new ArgumentNullException(nameof(logger));
+
+    // Track all films per scraper for final persistence
+    private readonly Dictionary<string, List<Film>> _filmsByScraperName = new();
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     /// <summary>
     /// Creates a batch block that groups enriched films for efficient persistence.
@@ -32,13 +41,17 @@ public class PersistenceStage(
     public BatchBlock<EnrichedFilm> CreateBatchBlock(
         int batchSize,
         int boundedCapacity,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        return new BatchBlock<EnrichedFilm>(batchSize, new GroupingDataflowBlockOptions
-        {
-            BoundedCapacity = boundedCapacity,
-            CancellationToken = cancellationToken
-        });
+        return new BatchBlock<EnrichedFilm>(
+            batchSize,
+            new GroupingDataflowBlockOptions
+            {
+                BoundedCapacity = boundedCapacity,
+                CancellationToken = cancellationToken,
+            }
+        );
     }
 
     /// <summary>
@@ -46,15 +59,17 @@ public class PersistenceStage(
     /// </summary>
     public ActionBlock<EnrichedFilm[]> CreatePersistBlock(
         int maxDegreeOfParallelism,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         return new ActionBlock<EnrichedFilm[]>(
             async enrichedFilms => await PersistBatchAsync(enrichedFilms, cancellationToken),
             new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = maxDegreeOfParallelism,
-                CancellationToken = cancellationToken
-            });
+                CancellationToken = cancellationToken,
+            }
+        );
     }
 
     /// <summary>
@@ -62,7 +77,8 @@ public class PersistenceStage(
     /// </summary>
     private async Task PersistBatchAsync(
         EnrichedFilm[] enrichedFilms,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (cancellationToken.IsCancellationRequested)
             return;
@@ -83,14 +99,18 @@ public class PersistenceStage(
                 filmBatch.SuccessCount,
                 filmBatch.TotalAttempted,
                 filmBatch.CachedCount,
-                filmBatch.FailureCount);
+                filmBatch.FailureCount
+            );
 
-            await PersistFilmsAndHistoryAsync(filmBatch.Films, cancellationToken);
+            await PersistFilmsAndHistoryAsync(enrichedFilms, filmBatch.Films, cancellationToken);
 
             // Update metrics
             Interlocked.Add(ref _metrics.FilmsPersisted, filmBatch.Films.Count);
 
-            _logger.LogInformation("Successfully persisted batch of {Count} films", filmBatch.Films.Count);
+            _logger.LogInformation(
+                "Successfully persisted batch of {Count} films",
+                filmBatch.Films.Count
+            );
         }
         catch (Exception ex)
         {
@@ -111,8 +131,8 @@ public class PersistenceStage(
         int successCount = enrichedFilms.Count(ef => ef.Status == EnrichmentStatus.Success);
         int cachedCount = enrichedFilms.Count(ef => ef.Status == EnrichmentStatus.CachedSuccess);
         int failureCount = enrichedFilms.Count(ef =>
-            ef.Status == EnrichmentStatus.OmdbFailure ||
-            ef.Status == EnrichmentStatus.RadarrFailure);
+            ef.Status == EnrichmentStatus.OmdbFailure || ef.Status == EnrichmentStatus.RadarrFailure
+        );
 
         return new FilmBatch(
             Films: validFilms,
@@ -124,23 +144,77 @@ public class PersistenceStage(
     }
 
     /// <summary>
-    /// Persists films to the repository and updates scraper history in parallel.
+    /// Persists films to the repository and accumulates films per scraper for final history update.
     /// </summary>
     private async Task PersistFilmsAndHistoryAsync(
+        EnrichedFilm[] enrichedFilms,
         IReadOnlyList<Film> films,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        List<Task> persistTasks = [];
-
-        // Update scraper history for each scraper
-        foreach (Scraper.Scrapers.Scraper scraper in _scrapers)
+        // Accumulate films by scraper name for final persistence (deduplicated by TmdbId or Title+Year)
+        await _semaphore.WaitAsync(cancellationToken);
+        try
         {
-            persistTasks.Add(scraper.PersistRunAsync(films.ToList(), cancellationToken));
+            foreach (EnrichedFilm enrichedFilm in enrichedFilms.Where(ef => ef.Film != null))
+            {
+                if (!_filmsByScraperName.ContainsKey(enrichedFilm.ScraperName))
+                {
+                    _filmsByScraperName[enrichedFilm.ScraperName] = [];
+                }
+
+                // Only add if not already present (deduplicate by TmdbId if available, otherwise by Title)
+                Film film = enrichedFilm.Film!;
+                bool isDuplicate = !string.IsNullOrEmpty(film.TmdbId)
+                    ? _filmsByScraperName[enrichedFilm.ScraperName]
+                        .Any(f => f.TmdbId == film.TmdbId)
+                    : _filmsByScraperName[enrichedFilm.ScraperName]
+                        .Any(f => f.Title == film.Title && f.Year == film.Year);
+
+                if (!isDuplicate)
+                {
+                    _filmsByScraperName[enrichedFilm.ScraperName].Add(film);
+                }
+            }
+        }
+        finally
+        {
+            _semaphore.Release();
         }
 
         // Upsert films to repository
-        persistTasks.AddRange(_filmRepository.UpsertFilms(films.ToList(), cancellationToken));
+        await Task.WhenAll(_filmRepository.UpsertFilms(films.ToList(), cancellationToken));
+    }
+
+    /// <summary>
+    /// Finalizes the persistence by updating scraper history once per scraper with all accumulated films.
+    /// Should be called after all batches have been processed.
+    /// </summary>
+    public async Task FinalizeScraperHistoryAsync(CancellationToken cancellationToken = default)
+    {
+        List<Task> persistTasks = [];
+
+        // Update scraper history for each scraper with all its accumulated films
+        foreach (Scraper.Scrapers.Scraper scraper in _scrapers)
+        {
+            string scraperName = scraper.GetType().Name;
+            if (
+                _filmsByScraperName.TryGetValue(scraperName, out List<Film>? scraperFilms)
+                && scraperFilms.Count > 0
+            )
+            {
+                _logger.LogInformation(
+                    "Finalizing scraper history for {ScraperName} with {Count} films",
+                    scraperName,
+                    scraperFilms.Count
+                );
+
+                persistTasks.Add(scraper.PersistRunAsync(scraperFilms, cancellationToken));
+            }
+        }
 
         await Task.WhenAll(persistTasks);
+
+        _logger.LogInformation("Scraper history finalized for all scrapers");
     }
 }

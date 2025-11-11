@@ -12,15 +12,15 @@ public class Film
     [AllowNull]
     public string Id { get; set; } = null!;
     public required string Title { get; set; } = string.Empty;
-    
+
     public required string TmdbId { get; set; } = string.Empty;
-    
+
     public bool IsInRadarr { get; set; } = false;
 
     public string? Country { get; set; }
     public string? Year { get; set; }
-    
+
     public string? PosterUrl { get; init; }
-    
+
     public required DateTime ScrapedDate { get; init; }
 }

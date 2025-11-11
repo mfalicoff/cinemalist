@@ -17,18 +17,23 @@ namespace CinemaList.Api.Services.Dataflow.Stages;
 public class ScraperStage(
     IEnumerable<Scraper.Scrapers.Scraper> scrapers,
     PipelineMetrics metrics,
-    ILogger<ScraperStage> logger)
+    ILogger<ScraperStage> logger
+)
 {
-    private readonly IEnumerable<Scraper.Scrapers.Scraper> _scrapers = scrapers ?? throw new ArgumentNullException(nameof(scrapers));
-    private readonly ILogger<ScraperStage> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly PipelineMetrics _metrics = metrics ?? throw new ArgumentNullException(nameof(metrics));
+    private readonly IEnumerable<Scraper.Scrapers.Scraper> _scrapers =
+        scrapers ?? throw new ArgumentNullException(nameof(scrapers));
+    private readonly ILogger<ScraperStage> _logger =
+        logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly PipelineMetrics _metrics =
+        metrics ?? throw new ArgumentNullException(nameof(metrics));
 
     /// <summary>
     /// Creates the scraper block that runs each scraper and outputs individual film items.
     /// </summary>
     public TransformManyBlock<Scraper.Scrapers.Scraper, ScrapedFilmItem> CreateBlock(
         int maxDegreeOfParallelism,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         return new TransformManyBlock<Scraper.Scrapers.Scraper, ScrapedFilmItem>(
             async scraper => await ExecuteScraperAsync(scraper, cancellationToken),
@@ -36,8 +41,9 @@ public class ScraperStage(
             {
                 MaxDegreeOfParallelism = maxDegreeOfParallelism,
                 BoundedCapacity = _scrapers.Count(),
-                CancellationToken = cancellationToken
-            });
+                CancellationToken = cancellationToken,
+            }
+        );
     }
 
     /// <summary>
@@ -45,7 +51,8 @@ public class ScraperStage(
     /// </summary>
     private async Task<IEnumerable<ScrapedFilmItem>> ExecuteScraperAsync(
         Scraper.Scrapers.Scraper scraper,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (cancellationToken.IsCancellationRequested)
             return [];
@@ -57,7 +64,10 @@ public class ScraperStage(
             // Check if scraper should run based on its business rules
             if (!await scraper.ShouldRunScraper(cancellationToken))
             {
-                _logger.LogInformation("Skipping scraper {ScraperName} - should not run", scraperName);
+                _logger.LogInformation(
+                    "Skipping scraper {ScraperName} - should not run",
+                    scraperName
+                );
                 return [];
             }
 
@@ -69,8 +79,11 @@ public class ScraperStage(
             // Update metrics
             Interlocked.Add(ref _metrics.TotalScraped, scrapedFilms.Count);
 
-            _logger.LogInformation("Scraped {Count} films from {ScraperName}",
-                scrapedFilms.Count, scraperName);
+            _logger.LogInformation(
+                "Scraped {Count} films from {ScraperName}",
+                scrapedFilms.Count,
+                scraperName
+            );
 
             // Transform into ScrapedFilmItem records
             return scrapedFilms.Select(film => new ScrapedFilmItem(

@@ -8,8 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace CinemaList.Api.HostedServices;
 
-public class ScraperInitializerService(IServiceProvider serviceProvider, ILogger<ScraperInitializerService> logger)
-    : BackgroundService
+public class ScraperInitializerService(
+    IServiceProvider serviceProvider,
+    ILogger<ScraperInitializerService> logger
+) : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly ILogger<ScraperInitializerService> _logger = logger;
@@ -38,9 +40,10 @@ public class ScraperInitializerService(IServiceProvider serviceProvider, ILogger
         try
         {
             _logger.LogInformation("Starting scraper run at {Time}", DateTime.UtcNow);
-            
+
             await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
-            IScraperService scraperService = scope.ServiceProvider.GetRequiredService<IScraperService>();
+            IScraperService scraperService =
+                scope.ServiceProvider.GetRequiredService<IScraperService>();
             await scraperService.ScrapeFilmsAsync(cancellationToken);
 
             _logger.LogInformation("Completed scraper run at {Time}", DateTime.UtcNow);

@@ -34,7 +34,8 @@ public class MovieEnrichmentStage
         int retryCount,
         int cacheExpirationHours,
         bool cachingEnabled,
-        ILogger<MovieEnrichmentStage> logger)
+        ILogger<MovieEnrichmentStage> logger
+    )
     {
         _movieService = movieService ?? throw new ArgumentNullException(nameof(movieService));
         _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
@@ -49,14 +50,20 @@ public class MovieEnrichmentStage
             .Or<TaskCanceledException>()
             .WaitAndRetryAsync(
                 retryCount: retryCount,
-                sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                sleepDurationProvider: retryAttempt =>
+                    TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                 onRetry: (exception, timeSpan, retryCount, context) =>
                 {
                     object? filmTitle = context.GetValueOrDefault("FilmTitle", "Unknown");
-                    _logger.LogWarning(exception,
+                    _logger.LogWarning(
+                        exception,
                         "Retry {RetryCount} for film {Title} after {Delay}s",
-                        retryCount, filmTitle, timeSpan.TotalSeconds);
-                });
+                        retryCount,
+                        filmTitle,
+                        timeSpan.TotalSeconds
+                    );
+                }
+            );
     }
 
     /// <summary>
@@ -65,7 +72,8 @@ public class MovieEnrichmentStage
     public TransformBlock<DeduplicatedFilm, EnrichedFilm> CreateBlock(
         int maxDegreeOfParallelism,
         int boundedCapacity,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         return new TransformBlock<DeduplicatedFilm, EnrichedFilm>(
             async dedupFilm => await EnrichFilmAsync(dedupFilm, cancellationToken),
@@ -73,8 +81,9 @@ public class MovieEnrichmentStage
             {
                 MaxDegreeOfParallelism = maxDegreeOfParallelism,
                 BoundedCapacity = boundedCapacity,
-                CancellationToken = cancellationToken
-            });
+                CancellationToken = cancellationToken,
+            }
+        );
     }
 
     /// <summary>
@@ -83,7 +92,8 @@ public class MovieEnrichmentStage
     /// </summary>
     private async Task<EnrichedFilm> EnrichFilmAsync(
         DeduplicatedFilm dedupFilm,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         // Skip duplicates - they've already been processed
         if (dedupFilm.IsDuplicate)
@@ -106,11 +116,17 @@ public class MovieEnrichmentStage
         try
         {
             // Check cache first if caching is enabled
-            if (_cachingEnabled && _memoryCache.TryGetValue(dedupFilm.CacheKey, out Film? cachedFilm))
+            if (
+                _cachingEnabled
+                && _memoryCache.TryGetValue(dedupFilm.CacheKey, out Film? cachedFilm)
+            )
             {
                 Interlocked.Increment(ref _metrics.CacheHits);
-                _logger.LogDebug("Cache hit for film: {Title} ({Year})",
-                    dedupFilm.Film.Title, dedupFilm.Film.Year);
+                _logger.LogDebug(
+                    "Cache hit for film: {Title} ({Year})",
+                    dedupFilm.Film.Title,
+                    dedupFilm.Film.Year
+                );
 
                 return new EnrichedFilm(
                     Film: cachedFilm,
@@ -125,20 +141,22 @@ public class MovieEnrichmentStage
             // Not in cache, fetch from OMDB with retry logic
             Interlocked.Increment(ref _metrics.OmdbCalls);
 
-            Context context = new()
-            {
-                ["FilmTitle"] = dedupFilm.Film.Title ?? "Unknown"
-            };
+            Context context = new() { ["FilmTitle"] = dedupFilm.Film.Title ?? "Unknown" };
 
             Film? enrichedFilm = await _retryPolicy.ExecuteAsync(
-                async (ctx) => await _movieService.FetchMovieMetadata(dedupFilm.Film, cancellationToken),
-                context);
+                async (ctx) =>
+                    await _movieService.FetchMovieMetadata(dedupFilm.Film, cancellationToken),
+                context
+            );
 
             if (enrichedFilm == null)
             {
                 Interlocked.Increment(ref _metrics.OmdbFailures);
-                _logger.LogWarning("Could not enrich film: {Title} ({Year})",
-                    dedupFilm.Film.Title, dedupFilm.Film.Year);
+                _logger.LogWarning(
+                    "Could not enrich film: {Title} ({Year})",
+                    dedupFilm.Film.Title,
+                    dedupFilm.Film.Year
+                );
 
                 return CreateFailedEnrichment(dedupFilm, EnrichmentStatus.OmdbFailure);
             }
@@ -149,13 +167,16 @@ public class MovieEnrichmentStage
                 MemoryCacheEntryOptions cacheOptions = new()
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(_cacheExpirationHours),
-                    Size = 1 // For cache size limit tracking
+                    Size = 1, // For cache size limit tracking
                 };
                 _memoryCache.Set(dedupFilm.CacheKey, enrichedFilm, cacheOptions);
             }
 
-            _logger.LogInformation("Enriched film {Title} with IMDB ID {ImdbId}",
-                dedupFilm.Film.Title, enrichedFilm.TmdbId);
+            _logger.LogInformation(
+                "Enriched film {Title} with IMDB ID {ImdbId}",
+                dedupFilm.Film.Title,
+                enrichedFilm.TmdbId
+            );
 
             return new EnrichedFilm(
                 Film: enrichedFilm,
@@ -169,8 +190,11 @@ public class MovieEnrichmentStage
         catch (Exception ex)
         {
             Interlocked.Increment(ref _metrics.OmdbFailures);
-            _logger.LogError(ex, "Error enriching film {Title} after retries",
-                dedupFilm.Film.Title);
+            _logger.LogError(
+                ex,
+                "Error enriching film {Title} after retries",
+                dedupFilm.Film.Title
+            );
 
             return CreateFailedEnrichment(dedupFilm, EnrichmentStatus.OmdbFailure);
         }
@@ -179,7 +203,10 @@ public class MovieEnrichmentStage
     /// <summary>
     /// Creates an EnrichedFilm record for a failed enrichment attempt.
     /// </summary>
-    private static EnrichedFilm CreateFailedEnrichment(DeduplicatedFilm dedupFilm, EnrichmentStatus status)
+    private static EnrichedFilm CreateFailedEnrichment(
+        DeduplicatedFilm dedupFilm,
+        EnrichmentStatus status
+    )
     {
         return new EnrichedFilm(
             Film: null,

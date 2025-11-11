@@ -8,11 +8,7 @@ namespace CinemaList.Api.Services.Dataflow.Models;
 /// Represents a film that has been scraped from a cinema website.
 /// Includes the original scraped film data.
 /// </summary>
-public record ScrapedFilmItem(
-    ScrapedFilm Film,
-    string ScraperName,
-    DateTime ScrapedAt
-);
+public record ScrapedFilmItem(ScrapedFilm Film, string ScraperName, DateTime ScrapedAt);
 
 /// <summary>
 /// Represents a film after deduplication processing.
@@ -47,7 +43,7 @@ public enum EnrichmentStatus
     CachedSuccess,
     OmdbFailure,
     RadarrFailure,
-    Skipped
+    Skipped,
 }
 
 /// <summary>
@@ -76,8 +72,11 @@ public record PipelineMetrics
     public DateTime? EndTime { get; set; }
 
     public TimeSpan Duration => EndTime.HasValue ? EndTime.Value - StartTime : TimeSpan.Zero;
-    public double ThroughputPerSecond => Duration.TotalSeconds > 0 ? FilmsPersisted / Duration.TotalSeconds : 0;
-    public double CacheHitRate => OmdbCalls + CacheHits > 0 ? CacheHits / (double)(OmdbCalls + CacheHits) : 0;
-    public double DuplicationRate => TotalScraped > 0 ? DuplicatesFiltered / (double)TotalScraped : 0;
+    public double ThroughputPerSecond =>
+        Duration.TotalSeconds > 0 ? FilmsPersisted / Duration.TotalSeconds : 0;
+    public double CacheHitRate =>
+        OmdbCalls + CacheHits > 0 ? CacheHits / (double)(OmdbCalls + CacheHits) : 0;
+    public double DuplicationRate =>
+        TotalScraped > 0 ? DuplicatesFiltered / (double)TotalScraped : 0;
     public double OmdbFailureRate => OmdbCalls > 0 ? OmdbFailures / (double)OmdbCalls : 0;
 }

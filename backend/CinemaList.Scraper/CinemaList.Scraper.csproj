@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    
-    <ItemGroup>
-      <PackageReference Include="HtmlAgilityPack" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\CinemaList.Common\CinemaList.Common.csproj" />
-    </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\CinemaList.Common\CinemaList.Common.csproj" />
+  </ItemGroup>
 </Project>

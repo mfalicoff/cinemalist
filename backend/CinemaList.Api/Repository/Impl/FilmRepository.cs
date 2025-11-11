@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace CinemaList.Api.Repository.Impl;
 
-public class FilmRepository(IMongoCollection<Film> collection): IFilmRepository
+public class FilmRepository(IMongoCollection<Film> collection) : IFilmRepository
 {
     private readonly IMongoCollection<Film> _collection = collection;
 
@@ -16,36 +16,48 @@ public class FilmRepository(IMongoCollection<Film> collection): IFilmRepository
         return _collection.Find(_ => true).SortBy(x => x.Title).ToListAsync();
     }
 
-    public async Task<List<Film>> GetFilmsByFilter(FilmFilter filter, CancellationToken cancellationToken = default)
+    public async Task<List<Film>> GetFilmsByFilter(
+        FilmFilter filter,
+        CancellationToken cancellationToken = default
+    )
     {
         FilterDefinition<Film> mongoFilter = filter switch
         {
             FilmFilter.All => Builders<Film>.Filter.Empty,
             FilmFilter.InRadarr => Builders<Film>.Filter.Eq(f => f.IsInRadarr, true),
             FilmFilter.NotInRadarr => Builders<Film>.Filter.Eq(f => f.IsInRadarr, false),
-            _ => Builders<Film>.Filter.Empty
+            _ => Builders<Film>.Filter.Empty,
         };
-        return await (await _collection.FindAsync(mongoFilter, cancellationToken: cancellationToken)).ToListAsync(cancellationToken);
+        return await (
+            await _collection.FindAsync(mongoFilter, cancellationToken: cancellationToken)
+        ).ToListAsync(cancellationToken);
     }
 
     public async Task UpsertFilms(List<Film> films, CancellationToken cancellationToken = default)
     {
-        List<WriteModel<Film>> bulkOps = (from film in films
-                let filter = Builders<Film>.Filter.Eq(f => f.TmdbId, film.TmdbId)
-                let update = Builders<Film>.Update
-                    .Set(f => f.Title, film.Title)
-                    .Set(f => f.Country, film.Country)
-                    .Set(f => f.Year, film.Year)
-                    .Set(f => f.PosterUrl, film.PosterUrl)
-                    .Set(f => f.TmdbId, film.TmdbId)
-                    .Set(f => f.IsInRadarr, film.IsInRadarr)
-                select new UpdateOneModel<Film>(filter, update) { IsUpsert = true }).Cast<WriteModel<Film>>()
+        List<WriteModel<Film>> bulkOps = (
+            from film in films
+            let filter = Builders<Film>.Filter.Eq(f => f.TmdbId, film.TmdbId)
+            let update = Builders<Film>
+                .Update.Set(f => f.Title, film.Title)
+                .Set(f => f.Country, film.Country)
+                .Set(f => f.Year, film.Year)
+                .Set(f => f.PosterUrl, film.PosterUrl)
+                .Set(f => f.TmdbId, film.TmdbId)
+                .Set(f => f.IsInRadarr, film.IsInRadarr)
+            select new UpdateOneModel<Film>(filter, update) { IsUpsert = true }
+        )
+            .Cast<WriteModel<Film>>()
             .ToList();
-        
+
         await _collection.BulkWriteAsync(bulkOps, cancellationToken: cancellationToken);
     }
 
-    public Task UpdateFilmRadarrStatus(string tmdbId, bool isInRadarr, CancellationToken cancellationToken = default)
+    public Task UpdateFilmRadarrStatus(
+        string tmdbId,
+        bool isInRadarr,
+        CancellationToken cancellationToken = default
+    )
     {
         FilterDefinition<Film>? filter = Builders<Film>.Filter.Eq(f => f.TmdbId, tmdbId);
         UpdateDefinition<Film>? update = Builders<Film>.Update.Set(f => f.IsInRadarr, isInRadarr);

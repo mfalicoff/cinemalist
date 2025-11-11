@@ -7,16 +7,19 @@ using Microsoft.Extensions.Logging;
 
 namespace CinemaList.Api.HostedServices;
 
-public class RadarrSynchronizerService(IMovieService movieService, ILogger<RadarrSynchronizerService> logger): BackgroundService
+public class RadarrSynchronizerService(
+    IMovieService movieService,
+    ILogger<RadarrSynchronizerService> logger
+) : BackgroundService
 {
     private readonly IMovieService _movieService = movieService;
-    
+
     private readonly ILogger<RadarrSynchronizerService> _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await _movieService.SynchronizeWithRadarr(stoppingToken);
-        
+
         using PeriodicTimer timer = new(TimeSpan.FromHours(1));
         try
         {
