@@ -1,4 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>mazilious/mazilious.common"]
+  "extends": ["github>mfalicoff/mazilious.common"]
 }
