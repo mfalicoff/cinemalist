@@ -83,7 +83,7 @@
                     </div>
                 {:else}
                     <div
-                        class="mb-6 flex justify-center items-center bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg shadow-lg h-96 w-64 mx-auto"
+                        class="mb-6 flex justify-center items-center bg-linear-to-br from-primary-500 to-primary-700 rounded-lg shadow-lg h-96 w-64 mx-auto"
                     >
                         <span class="text-8xl">🎬</span>
                     </div>

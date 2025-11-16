@@ -79,7 +79,7 @@
 <aside
     class="{isMobileMenuOpen
         ? 'translate-x-0'
-        : '-translate-x-full'} md:translate-x-0 fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-primary-600 to-primary-700 text-white shadow-xl z-40 transition-transform duration-300 ease-in-out"
+        : '-translate-x-full'} md:translate-x-0 fixed left-0 top-0 h-screen w-64 bg-linear-to-b from-primary-600 to-primary-700 text-white shadow-xl z-40 transition-transform duration-300 ease-in-out"
 >
     <!-- Logo/Title -->
     <div class="p-6 border-b border-white border-opacity-20">
@@ -98,8 +98,8 @@
                         class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 {isActive(
                             item.path,
                         )
-                            ? 'bg-white bg-opacity-20 font-semibold'
-                            : 'hover:bg-white hover:bg-opacity-10'}"
+                            ? 'bg-white text-black bg-opacity-20 font-semibold'
+                            : 'hover:bg-white hover:text-black hover:bg-opacity-10'}"
                     >
                         <span class="text-2xl">{item.icon}</span>
                         <span class="text-base">{item.label}</span>

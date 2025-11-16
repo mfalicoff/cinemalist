@@ -63,7 +63,7 @@
 
 <FilmModal film={selectedFilm} isOpen={isModalOpen} onClose={closeModal} />
 
-<div class="min-h-screen bg-gradient-to-br from-primary-500 to-primary-700">
+<div class="min-h-screen bg-linear-to-br from-primary-500 to-primary-700">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 md:pt-8">
         <!-- Header -->
         <header class="text-center text-white mb-8">
@@ -78,7 +78,7 @@
                     type="text"
                     bind:value={searchQuery}
                     placeholder="Search films by title, director, country, or year..."
-                    class="w-full px-6 py-4 text-lg rounded-xl shadow-lg focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-50 transition-all"
+                    class="w-full px-6 py-4 text-lg rounded-xl bg-amber-50 shadow-lg focus:outline-node focus:ring-4 focus:ring-white focus:ring-opacity-50 transition-all"
                 />
                 {#if searchQuery}
                     <button
@@ -156,7 +156,7 @@
                     >
                         <!-- Poster -->
                         {#if film.posterUrl && film.posterUrl !== "N/A"}
-                            <div class="aspect-[2/3] overflow-hidden">
+                            <div class="aspect-2/3 overflow-hidden">
                                 <img
                                     src={film.posterUrl}
                                     alt={film.title}
@@ -165,7 +165,7 @@
                             </div>
                         {:else}
                             <div
-                                class="aspect-[2/3] bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center"
+                                class="aspect-2/3 bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center"
                             >
                                 <span class="text-6xl">🎬</span>
                             </div>

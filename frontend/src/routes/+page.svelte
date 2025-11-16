@@ -111,7 +111,7 @@
 
 <FilmModal film={selectedFilm} isOpen={isModalOpen} onClose={closeModal} />
 
-<div class="min-h-screen bg-gradient-to-br from-primary-500 to-primary-700">
+<div class="min-h-screen bg-linear-to-br from-primary-500 to-primary-700">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 md:pt-8">
         <!-- Header -->
         <header class="text-center text-white mb-6 md:mb-12">
@@ -189,7 +189,7 @@
                                 </p>
                             </div>
                             <div
-                                class="text-2xl sm:text-3xl md:text-4xl text-primary-500 transition-transform duration-200 ml-2 sm:ml-4 flex-shrink-0"
+                                class="text-2xl sm:text-3xl md:text-4xl text-primary-500 transition-transform duration-200 ml-2 sm:ml-4 shrink-0"
                             >
                                 {expandedSources.has(source) ? "▼" : "▶"}
                             </div>
@@ -203,7 +203,7 @@
                                 >
                                     {#each scrapes as scrape}
                                         <div
-                                            class="bg-white rounded-lg shadow overflow-hidden"
+                                            class="bg-white rounded-lg shadow-sm overflow-hidden"
                                         >
                                             <!-- Individual Scrape Header -->
                                             <div
@@ -238,7 +238,7 @@
                                                     </p>
                                                 </div>
                                                 <div
-                                                    class="text-xl sm:text-2xl text-primary-500 transition-transform duration-200 ml-2 sm:ml-4 flex-shrink-0"
+                                                    class="text-xl sm:text-2xl text-primary-500 transition-transform duration-200 ml-2 sm:ml-4 shrink-0"
                                                 >
                                                     {expandedScrapes.has(
                                                         scrape.id || "",
@@ -263,10 +263,10 @@
                                                     >
                                                         {#each Object.entries(scrape.moviesScraped) as [title, imdbId]}
                                                             <div
-                                                                class="bg-white p-2 sm:p-3 rounded border-l-4 border-primary-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 transition-transform duration-200 hover:translate-x-1"
+                                                                class="bg-white p-2 sm:p-3 rounded-sm border-l-4 border-primary-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 transition-transform duration-200 hover:translate-x-1"
                                                             >
                                                                 <span
-                                                                    class="text-gray-900 text-xs sm:text-sm flex-1 break-words"
+                                                                    class="text-gray-900 text-xs sm:text-sm flex-1 wrap-break-word"
                                                                 >
                                                                     🎬 {title}
                                                                 </span>
@@ -279,7 +279,7 @@
                                                                                 imdbId,
                                                                             )}
                                                                         disabled={isLoadingFilm}
-                                                                        class="inline-block bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded transition-colors duration-200 text-xs sm:text-sm w-full sm:w-auto"
+                                                                        class="inline-block bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-sm transition-colors duration-200 text-xs sm:text-sm w-full sm:w-auto"
                                                                     >
                                                                         {isLoadingFilm
                                                                             ? "Loading..."
