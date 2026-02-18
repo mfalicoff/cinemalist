@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using CinemaList.Api.Configuration;
 using CinemaList.Api.Repository;
 using CinemaList.Common.Models;
 using Microsoft.Extensions.Caching.Memory;
@@ -20,7 +19,6 @@ public class ScraperService(
     IMovieService movieService,
     IFilmRepository filmRepository,
     IMemoryCache memoryCache,
-    IOptions<DataflowScraperOptions> options,
     ILogger<ScraperService> logger
 ) : IScraperService
 {
@@ -28,7 +26,6 @@ public class ScraperService(
     private readonly IMovieService _movieService = movieService;
     private readonly IFilmRepository _filmRepository = filmRepository;
     private readonly IMemoryCache _memoryCache = memoryCache;
-    private readonly IOptions<DataflowScraperOptions> _options = options;
     private readonly ILogger<ScraperService> _logger = logger;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
