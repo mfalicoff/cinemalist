@@ -216,7 +216,8 @@ public class CinemaBeaubienScraper(
                 .Skip(1)
                 .TakeWhile(n => !IsLabelNode(n))
                 .Select(n => n.InnerText.Trim())
-                .Where(t => !string.IsNullOrWhiteSpace(t)) ?? Enumerable.Empty<string>();
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+            ?? Enumerable.Empty<string>();
         var combined = string.Join(" ", texts);
         return string.IsNullOrWhiteSpace(combined) ? null : combined;
     }
