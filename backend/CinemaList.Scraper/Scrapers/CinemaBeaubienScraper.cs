@@ -91,13 +91,18 @@ public class CinemaBeaubienScraper(
 
             await PopulateDetailFieldsAsync(film, cancellationToken);
 
-            if (film.ShouldBeAdded())
+            if (ShouldBeAdded(film))
             {
                 films.Add(film);
             }
         }
 
         return films;
+    }
+
+    public bool ShouldBeAdded(ScrapedFilm film)
+    {
+        return film.Title is not null;
     }
 
     private async Task PopulateDetailFieldsAsync(
@@ -211,7 +216,8 @@ public class CinemaBeaubienScraper(
                 .Skip(1)
                 .TakeWhile(n => !IsLabelNode(n))
                 .Select(n => n.InnerText.Trim())
-                .Where(t => !string.IsNullOrWhiteSpace(t)) ?? Enumerable.Empty<string>();
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+            ?? Enumerable.Empty<string>();
         var combined = string.Join(" ", texts);
         return string.IsNullOrWhiteSpace(combined) ? null : combined;
     }

@@ -9,9 +9,4 @@ public record ScrapedFilm
     public string? Duration { get; set; }
     public string? Language { get; set; }
     public string? Url { get; set; }
-
-    public bool ShouldBeAdded()
-    {
-        return !string.IsNullOrEmpty(Title);
-    }
 }

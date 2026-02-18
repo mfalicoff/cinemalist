@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CinemaList.Common\CinemaList.Common.csproj" />
     <ProjectReference Include="..\CinemaList.Scraper\CinemaList.Scraper.csproj" />
+    <ProjectReference Include="..\CinemaList.ServiceDefaults\CinemaList.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

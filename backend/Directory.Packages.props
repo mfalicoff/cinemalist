@@ -4,15 +4,25 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- ASP.NET Core packages -->
+    <PackageVersion Include="Aspire.Hosting.Docker" Version="13.1.1-preview.1.26105.8" />
+    <PackageVersion Include="Aspire.Hosting.MongoDB" Version="13.1.1" />
+    <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Bun" Version="13.1.2-beta.518" />
     <PackageVersion Include="Mazilious.Common" Version="0.4.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.11.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.41" />
     <!-- MongoDB packages -->
-    <PackageVersion Include="MongoDB.Bson" Version="3.5.2" />
-    <PackageVersion Include="MongoDB.Driver" Version="3.5.2" />
+    <PackageVersion Include="MongoDB.Bson" Version="3.6.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="3.6.0" />
     <!-- HTML parsing -->
     <PackageVersion Include="HtmlAgilityPack" Version="1.12.4" />
     <!-- Resilience -->
-    <PackageVersion Include="TMDbLib" Version="2.3.0" />
+    <PackageVersion Include="TMDbLib" Version="3.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.3.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.3.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
   </ItemGroup>
 </Project>
