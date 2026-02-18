@@ -30,7 +30,7 @@ public abstract class Scraper(IMongoCollection<ScraperHistoryEntity> collection,
     /// </summary>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>True if the scraper should run; otherwise, false.</returns>
-    public virtual async Task<bool> ShouldRunScraper(CancellationToken cancellationToken = default)
+    public async Task<bool> ShouldRunScraper(CancellationToken cancellationToken = default)
     {
         DateTime oneDayAgo = DateTime.UtcNow.AddDays(-1);
         FilterDefinition<ScraperHistoryEntity> filter = Builders<ScraperHistoryEntity>.Filter.And(

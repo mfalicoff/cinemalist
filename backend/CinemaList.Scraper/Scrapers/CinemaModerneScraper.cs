@@ -55,13 +55,18 @@ public class CinemaModerneScraper(
         {
             ScrapedFilm film = ExtractFilmFromCard(card);
 
-            if (film.ShouldBeAdded())
+            if (ShouldBeAdded(film))
             {
                 films.Add(film);
             }
         }
 
         return films;
+    }
+
+    public bool ShouldBeAdded(ScrapedFilm film)
+    {
+        return film is { Title: not null, Year: not null };
     }
 
     public override async Task PersistRunAsync(
@@ -74,7 +79,7 @@ public class CinemaModerneScraper(
 
         foreach (Film film in films)
         {
-            string title = film.Title.ToString();
+            string title = film.Title;
 
             // Only add if title not already in dictionary
             if (!moviesScraped.ContainsKey(title))

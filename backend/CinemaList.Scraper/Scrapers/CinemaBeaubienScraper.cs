@@ -91,13 +91,18 @@ public class CinemaBeaubienScraper(
 
             await PopulateDetailFieldsAsync(film, cancellationToken);
 
-            if (film.ShouldBeAdded())
+            if (ShouldBeAdded(film))
             {
                 films.Add(film);
             }
         }
 
         return films;
+    }
+
+    public bool ShouldBeAdded(ScrapedFilm film)
+    {
+        return film.Title is not null;
     }
 
     private async Task PopulateDetailFieldsAsync(
