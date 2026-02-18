@@ -31,10 +31,10 @@ var api = builder
 static string FindBun()
 {
     var candidates = new[]
-        {
-            Environment.GetEnvironmentVariable("BUN_INSTALL"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".bun")
-        }
+    {
+        Environment.GetEnvironmentVariable("BUN_INSTALL"),
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".bun"),
+    }
         .Where(p => p is not null)
         .Select(p => Path.Combine(p!, "bin", "bun"))
         .FirstOrDefault(File.Exists);
