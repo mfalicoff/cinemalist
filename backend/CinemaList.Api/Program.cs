@@ -10,6 +10,8 @@ using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 builder.Configuration.ConfigureConfiguration();
 
 builder
@@ -30,6 +32,8 @@ builder.Services.AddScraping(builder.Configuration);
 builder.Services.AddHealthChecks();
 
 WebApplication app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
