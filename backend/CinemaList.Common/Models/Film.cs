@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -18,9 +19,18 @@ public class Film
     public bool IsInRadarr { get; set; } = false;
 
     public string? Country { get; set; }
+
     public string? Year { get; set; }
 
     public string? PosterUrl { get; init; }
+
+    public string? Overview { get; set; }
+
+    public List<string>? Genres { get; set; }
+
+    public int? Runtime { get; set; }
+
+    public string? TrailerUrl { get; set; }
 
     public required DateTime ScrapedDate { get; init; }
 }

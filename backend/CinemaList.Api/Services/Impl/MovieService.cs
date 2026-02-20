@@ -15,6 +15,7 @@ using CinemaList.Common.Models;
 using Microsoft.Extensions.Options;
 using TMDbLib.Client;
 using TMDbLib.Objects.General;
+using TMDbLib.Objects.Movies;
 using TMDbLib.Objects.Search;
 
 namespace CinemaList.Api.Services.Impl;
@@ -60,6 +61,18 @@ public class MovieService(
         if (searchMovie is null)
             return null;
 
+        Movie? detailedMovie = await _tmDbClient.GetMovieAsync(searchMovie.Id, MovieMethods.Videos, cancellationToken);
+        
+        string? trailerUrl = null;
+        if (detailedMovie?.Videos?.Results != null)
+        {
+            var trailer = detailedMovie.Videos.Results.FirstOrDefault(v => v.Type == "Trailer" && v.Site == "YouTube");
+            if (trailer != null)
+            {
+                trailerUrl = $"https://www.youtube.com/watch?v={trailer.Key}";
+            }
+        }
+
         bool isInRadarr = await IsFilmInRadarrAsync(searchMovie.Id.ToString(), cancellationToken);
 
         return new Film()
@@ -70,6 +83,10 @@ public class MovieService(
             PosterUrl = $"https://image.tmdb.org/t/p/original{searchMovie.PosterPath}",
             Year = scrapedFilm.Year,
             Country = scrapedFilm.Country,
+            Overview = detailedMovie?.Overview ?? searchMovie.Overview,
+            Runtime = detailedMovie?.Runtime,
+            Genres = detailedMovie?.Genres?.Select(g => g.Name).ToList(),
+            TrailerUrl = trailerUrl,
             ScrapedDate = _timeProvider.GetUtcNow().Date,
         };
     }

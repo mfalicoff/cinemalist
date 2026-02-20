@@ -44,6 +44,10 @@ public class FilmRepository(IMongoCollection<Film> collection) : IFilmRepository
                 .Set(f => f.Year, film.Year)
                 .Set(f => f.PosterUrl, film.PosterUrl)
                 .Set(f => f.TmdbId, film.TmdbId)
+                .Set(f => f.Overview, film.Overview)
+                .Set(f => f.Genres, film.Genres)
+                .Set(f => f.Runtime, film.Runtime)
+                .Set(f => f.TrailerUrl, film.TrailerUrl)
                 .Set(f => f.IsInRadarr, film.IsInRadarr)
             select new UpdateOneModel<Film>(filter, update) { IsUpsert = true }
         )
