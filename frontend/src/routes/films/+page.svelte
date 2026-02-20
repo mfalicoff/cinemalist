@@ -63,90 +63,135 @@
 
 <FilmModal film={selectedFilm} isOpen={isModalOpen} onClose={closeModal} />
 
-<div class="min-h-screen bg-linear-to-br from-primary-500 to-primary-700">
+<div class="animate-fade-in pb-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 md:pt-8">
         <!-- Header -->
-        <header class="text-center text-white mb-8">
-            <h1 class="text-5xl md:text-6xl font-bold mb-2">🎬 Films</h1>
-            <p class="text-xl opacity-90">Browse your film collection</p>
+        <header class="text-center text-white mb-12 relative">
+            <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary-600/20 rounded-full blur-3xl -z-10"
+            ></div>
+            <h1
+                class="text-5xl md:text-7xl font-bold mb-4 font-outfit tracking-tight filter drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+            >
+                <span class="text-primary-400">🎬</span> Films
+            </h1>
+            <p class="text-xl opacity-80 max-w-2xl mx-auto text-gray-300">
+                Browse and manage your cinematic collection easily.
+            </p>
         </header>
 
         <!-- Search Bar -->
-        <div class="mb-8 max-w-2xl mx-auto">
-            <div class="relative">
-                <input
-                    type="text"
-                    bind:value={searchQuery}
-                    placeholder="Search films by title, director, country, or year..."
-                    class="w-full px-6 py-4 text-lg rounded-xl bg-amber-50 shadow-lg focus:outline-node focus:ring-4 focus:ring-white focus:ring-opacity-50 transition-all"
-                />
-                {#if searchQuery}
-                    <button
-                        onclick={() => (searchQuery = "")}
-                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                        aria-label="Clear search"
+        <div class="mb-12 max-w-3xl mx-auto relative z-20">
+            <div class="relative group">
+                <div
+                    class="absolute inset-0 bg-primary-500/20 blur-xl rounded-full group-hover:bg-primary-500/30 transition-all duration-500"
+                ></div>
+                <div class="relative flex items-center">
+                    <span class="absolute left-6 text-gray-400 text-xl">🔍</span
                     >
-                        <svg
-                            class="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                    <input
+                        type="text"
+                        bind:value={searchQuery}
+                        placeholder="Search films by title, director, country, or year..."
+                        class="w-full pl-14 pr-16 py-5 text-lg rounded-2xl glass-input placeholder-gray-500 font-medium"
+                    />
+                    {#if searchQuery}
+                        <button
+                            onclick={() => (searchQuery = "")}
+                            class="absolute right-6 text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-full"
+                            aria-label="Clear search"
                         >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
-                {/if}
+                            <svg
+                                class="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+                    {/if}
+                </div>
             </div>
             {#if searchQuery}
-                <p class="text-white text-sm mt-2 text-center">
-                    Found {filteredFilms.length} film{filteredFilms.length !== 1
-                        ? "s"
-                        : ""}
-                </p>
+                <div class="flex justify-center mt-4">
+                    <span
+                        class="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-primary-300 text-sm font-medium shadow-[0_0_10px_rgba(124,58,237,0.2)]"
+                    >
+                        {filteredFilms.length} result{filteredFilms.length !== 1
+                            ? "s"
+                            : ""} found
+                    </span>
+                </div>
             {/if}
         </div>
 
         <!-- Error State -->
         {#if error}
             <div
-                class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-red-500"
+                class="glass-panel border-l-4 border-l-red-500 p-6 mb-8 rounded-xl animate-slide-up"
             >
-                <p class="text-red-500 font-semibold text-lg mb-2">
-                    ⚠️ {error}
-                </p>
-                <p class="text-gray-600 text-sm">
-                    Make sure the backend API is running on port 5104
-                </p>
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-red-500/20 rounded-full">
+                        <span
+                            class="text-2xl filter drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]"
+                            >⚠️</span
+                        >
+                    </div>
+                    <div>
+                        <p class="text-red-400 font-semibold text-lg mb-1">
+                            {error}
+                        </p>
+                        <p class="text-gray-400 text-sm">
+                            Verify that your backend API is online.
+                        </p>
+                    </div>
+                </div>
             </div>
         {/if}
 
         <!-- Empty State -->
         {#if filteredFilms.length === 0 && !error}
-            <div class="bg-white rounded-xl shadow-lg p-8 text-center">
-                <p class="text-gray-800 text-lg font-medium mb-2">
-                    {searchQuery
-                        ? "No films match your search"
-                        : "No films found in the database"}
-                </p>
-                <p class="text-gray-600">
-                    {searchQuery
-                        ? "Try a different search term"
-                        : "Run the scraper to add films!"}
-                </p>
+            <div
+                class="glass-panel p-16 text-center rounded-3xl animate-slide-up border border-white/5 relative overflow-hidden"
+            >
+                <div
+                    class="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 z-0"
+                ></div>
+                <div class="relative z-10 block">
+                    <div
+                        class="w-24 h-24 mx-auto mb-6 bg-white/5 rounded-full flex items-center justify-center border border-white/10"
+                    >
+                        <span
+                            class="text-5xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                        >
+                            {searchQuery ? "🙈" : "🎞️"}
+                        </span>
+                    </div>
+                    <h3 class="text-3xl font-bold text-white mb-3 font-outfit">
+                        {searchQuery ? "No Matches Found" : "Library is Empty"}
+                    </h3>
+                    <p class="text-gray-400 text-lg max-w-md mx-auto">
+                        {searchQuery
+                            ? "Try adjusting your search terms to find what you're looking for."
+                            : "Run your scrapers to start discovering amazing cinema!"}
+                    </p>
+                </div>
             </div>
         {:else if filteredFilms.length > 0}
             <!-- Films Grid -->
             <div
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6 mb-8"
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-8 mb-12"
             >
-                {#each filteredFilms as film}
+                {#each filteredFilms as film, i}
                     <div
-                        class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-200 hover:shadow-2xl hover:scale-105 cursor-pointer"
+                        class="group relative rounded-2xl overflow-hidden glass-panel-hover cursor-pointer border border-white/10 bg-black/40 animate-slide-up"
+                        style="animation-delay: {(i % 20) * 50}ms"
                         onclick={() => viewFilm(film)}
                         onkeydown={(e) =>
                             (e.key === "Enter" || e.key === " ") &&
@@ -155,48 +200,75 @@
                         tabindex="0"
                     >
                         <!-- Poster -->
-                        {#if film.posterUrl && film.posterUrl !== "N/A"}
-                            <div class="aspect-2/3 overflow-hidden">
+                        <div
+                            class="aspect-[2/3] w-full overflow-hidden relative bg-black"
+                        >
+                            {#if film.posterUrl && film.posterUrl !== "N/A"}
                                 <img
                                     src={film.posterUrl}
                                     alt={film.title}
-                                    class="w-full h-full object-cover"
+                                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    loading="lazy"
                                 />
-                            </div>
-                        {:else}
+                            {:else}
+                                <div
+                                    class="w-full h-full bg-gradient-to-br from-gray-900 to-black flex items-center justify-center border-b border-white/5"
+                                >
+                                    <span class="text-6xl opacity-50">🎬</span>
+                                </div>
+                            {/if}
+
+                            <!-- Hover Overlay -->
                             <div
-                                class="aspect-2/3 bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center"
+                                class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4"
                             >
-                                <span class="text-6xl">🎬</span>
+                                <div
+                                    class="translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
+                                >
+                                    <button
+                                        class="w-full btn-primary py-2 text-sm shadow-none"
+                                        >View Details</button
+                                    >
+                                </div>
                             </div>
-                        {/if}
+
+                            <!-- Radarr Status Badge -->
+                            <div class="absolute top-3 right-3">
+                                {#if film.isInRadarr}
+                                    <div
+                                        class="w-8 h-8 rounded-full bg-green-500/20 backdrop-blur-md border border-green-500/50 flex items-center justify-center shadow-[0_0_10px_rgba(34,197,94,0.4)]"
+                                        title="In Radarr"
+                                    >
+                                        <span class="text-green-400 text-sm"
+                                            >✓</span
+                                        >
+                                    </div>
+                                {/if}
+                            </div>
+                        </div>
 
                         <!-- Info -->
-                        <div class="p-2 sm:p-3 md:p-4">
+                        <div class="p-4 relative">
                             <h3
-                                class="font-bold text-gray-900 text-xs sm:text-sm md:text-base mb-1 sm:mb-2 line-clamp-2"
+                                class="font-bold text-white text-sm sm:text-base mb-2 line-clamp-1 font-outfit"
                                 title={film.title}
                             >
                                 {film.title}
                             </h3>
                             <div
-                                class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-gray-500"
+                                class="flex items-center justify-between text-xs font-medium text-gray-400"
                             >
                                 {#if film.year}
-                                    <span>📅 {film.year}</span>
+                                    <span
+                                        class="px-2 py-1 bg-white/5 rounded-md border border-white/5"
+                                        >{film.year}</span
+                                    >
                                 {/if}
                                 {#if film.country}
-                                    <span>🌍 {film.country}</span>
+                                    <span class="truncate ml-2"
+                                        >{film.country}</span
+                                    >
                                 {/if}
-                            </div>
-                            <div
-                                class="text-xs text-gray-500 mt-1 hidden sm:block"
-                            >
-                                <span
-                                    >{film.isInRadarr
-                                        ? "In Radarr: ✅"
-                                        : "In Radarr: ❌"}</span
-                                >
                             </div>
                         </div>
                     </div>
@@ -205,13 +277,18 @@
         {/if}
 
         <!-- Footer -->
-        <footer class="text-center text-white py-8">
-            <p class="text-lg font-medium">
-                Total films: {films.length}
-                {#if searchQuery && filteredFilms.length !== films.length}
-                    • Showing: {filteredFilms.length}
-                {/if}
-            </p>
-        </footer>
+        {#if films.length > 0}
+            <footer class="text-center py-8 border-t border-white/10">
+                <div
+                    class="inline-flex items-center gap-3 px-6 py-2 rounded-full glass-panel border border-white/5"
+                >
+                    <p class="text-sm font-medium text-gray-300">
+                        Total Collection: <span class="text-white font-bold"
+                            >{films.length}</span
+                        > films
+                    </p>
+                </div>
+            </footer>
+        {/if}
     </div>
 </div>

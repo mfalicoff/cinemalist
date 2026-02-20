@@ -111,56 +111,79 @@
 
 <FilmModal film={selectedFilm} isOpen={isModalOpen} onClose={closeModal} />
 
-<div class="min-h-screen bg-linear-to-br from-primary-500 to-primary-700">
+<div class="animate-fade-in pb-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 md:pt-8">
         <!-- Header -->
-        <header class="text-center text-white mb-6 md:mb-12">
+        <header class="text-center text-white mb-8 md:mb-16 relative">
+            <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary-500/20 rounded-full blur-3xl -z-10"
+            ></div>
             <h1
-                class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-2"
+                class="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 font-outfit tracking-tight filter drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
             >
-                📊 Scraper History
+                <span class="text-primary-400">📊 Scraper</span> History
             </h1>
-            <p class="text-base sm:text-lg md:text-xl opacity-90">
-                View scraping activity by source
+            <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
+                Track your automated film discovery across all sources
             </p>
         </header>
 
         <!-- Error State -->
         {#if error}
             <div
-                class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-red-500"
+                class="glass-panel border-l-4 border-l-red-500 p-6 mb-8 rounded-xl animate-slide-up"
             >
-                <p class="text-red-500 font-semibold text-lg mb-2">
-                    ⚠️ {error}
-                </p>
-                <p class="text-gray-600 text-sm">
-                    Make sure the backend API is running on port 5104
-                </p>
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-red-500/20 rounded-full">
+                        <span
+                            class="text-2xl filter drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]"
+                            >⚠️</span
+                        >
+                    </div>
+                    <div>
+                        <p class="text-red-400 font-semibold text-lg mb-1">
+                            {error}
+                        </p>
+                        <p class="text-gray-400 text-sm">
+                            Make sure the backend API is running on port 5104
+                        </p>
+                    </div>
+                </div>
             </div>
         {/if}
 
         <!-- Empty State -->
         {#if history.length === 0 && !error}
             <div
-                class="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 text-center"
+                class="glass-panel p-12 text-center rounded-2xl animate-slide-up border border-white/5"
             >
-                <p class="text-gray-800 text-base sm:text-lg font-medium mb-2">
-                    No scraper history found in the database.
-                </p>
-                <p class="text-gray-600 text-sm sm:text-base">
-                    Run the scraper to populate data!
+                <div
+                    class="w-24 h-24 mx-auto mb-6 bg-primary-500/10 rounded-full flex items-center justify-center"
+                >
+                    <span
+                        class="text-4xl filter drop-shadow-[0_0_10px_rgba(124,58,237,0.5)]"
+                        >🔍</span
+                    >
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2 font-outfit">
+                    No History Found
+                </h3>
+                <p class="text-gray-400 max-w-md mx-auto">
+                    Your database is currently empty. Run the scraper to start
+                    discovering and tracking new premium films!
                 </p>
             </div>
         {:else if groupedHistory.size > 0}
             <!-- Grouped History List -->
-            <div class="space-y-3 sm:space-y-4 md:space-y-6 mb-8">
-                {#each [...groupedHistory.entries()] as [source, scrapes]}
+            <div class="space-y-6 mb-12">
+                {#each [...groupedHistory.entries()] as [source, scrapes], i}
                     <div
-                        class="bg-white rounded-xl shadow-lg overflow-hidden transition-shadow duration-200 hover:shadow-xl"
+                        class="glass-panel rounded-2xl overflow-hidden animate-slide-up"
+                        style="animation-delay: {i * 100}ms"
                     >
                         <!-- Source Group Header -->
                         <div
-                            class="p-3 sm:p-4 md:p-6 cursor-pointer hover:bg-gray-50 transition-colors duration-200 flex justify-between items-center border-b-2 border-primary-500"
+                            class="p-5 sm:p-6 cursor-pointer hover:bg-white/5 transition-all duration-300 flex justify-between items-center group relative overflow-hidden"
                             role="button"
                             tabindex="0"
                             onclick={() => toggleSource(source)}
@@ -168,46 +191,65 @@
                                 (e.key === "Enter" || e.key === " ") &&
                                 toggleSource(source)}
                         >
-                            <div class="flex-1 min-w-0">
-                                <h2
-                                    class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2 truncate"
+                            {#if expandedSources.has(source)}
+                                <div
+                                    class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary-400 to-primary-600 shadow-[0_0_15px_rgba(124,58,237,0.8)]"
+                                ></div>
+                            {/if}
+
+                            <div class="flex-1 min-w-0 pl-2">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h2
+                                        class="text-2xl sm:text-3xl font-bold text-white font-outfit tracking-wide group-hover:text-primary-400 transition-colors"
+                                    >
+                                        {source}
+                                    </h2>
+                                    <span
+                                        class="px-3 py-1 rounded-full bg-primary-500/20 text-primary-300 text-xs font-bold border border-primary-500/30"
+                                    >
+                                        {scrapes.length} Run{scrapes.length !==
+                                        1
+                                            ? "s"
+                                            : ""}
+                                    </span>
+                                </div>
+                                <div
+                                    class="flex items-center gap-4 text-sm text-gray-400"
                                 >
-                                    {source}
-                                </h2>
-                                <p class="text-gray-600 text-sm sm:text-base">
-                                    📊 {scrapes.length} scrape{scrapes.length !==
-                                    1
-                                        ? "s"
-                                        : ""} recorded
-                                </p>
-                                <p
-                                    class="text-gray-500 text-xs sm:text-sm mt-1"
-                                >
-                                    Latest: {formatShortDate(
-                                        scrapes[0].scrapeDate,
-                                    )}
-                                </p>
+                                    <span class="flex items-center gap-1">
+                                        <span class="text-primary-500">🗓️</span>
+                                        Latest: {formatShortDate(
+                                            scrapes[0].scrapeDate,
+                                        )}
+                                    </span>
+                                </div>
                             </div>
                             <div
-                                class="text-2xl sm:text-3xl md:text-4xl text-primary-500 transition-transform duration-200 ml-2 sm:ml-4 shrink-0"
+                                class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-primary-400 transition-transform duration-300 ml-4 group-hover:bg-primary-500/20"
                             >
-                                {expandedSources.has(source) ? "▼" : "▶"}
+                                <span
+                                    class="transform transition-transform duration-300 {expandedSources.has(
+                                        source,
+                                    )
+                                        ? 'rotate-180'
+                                        : ''}">▼</span
+                                >
                             </div>
                         </div>
 
-                        <!-- Scrapes List (Expandable) -->
+                        <!-- Scrapes List -->
                         {#if expandedSources.has(source)}
-                            <div class="bg-gray-50 p-2 sm:p-3 md:p-4">
-                                <div
-                                    class="space-y-2 sm:space-y-3 md:space-y-4"
-                                >
-                                    {#each scrapes as scrape}
+                            <div
+                                class="bg-black/20 p-4 sm:p-6 border-t border-white/5 animate-fade-in"
+                            >
+                                <div class="space-y-4">
+                                    {#each scrapes as scrape, j}
                                         <div
-                                            class="bg-white rounded-lg shadow-sm overflow-hidden"
+                                            class="bg-white/5 rounded-xl border border-white/5 overflow-hidden hover:border-white/10 transition-colors duration-300"
                                         >
                                             <!-- Individual Scrape Header -->
                                             <div
-                                                class="p-2 sm:p-3 md:p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-200 flex justify-between items-center"
+                                                class="p-4 cursor-pointer hover:bg-white/5 transition-colors duration-200 flex justify-between items-center group"
                                                 role="button"
                                                 tabindex="0"
                                                 onclick={() =>
@@ -221,71 +263,125 @@
                                                         scrape.id || "",
                                                     )}
                                             >
-                                                <div class="flex-1 min-w-0">
-                                                    <p
-                                                        class="text-gray-600 text-xs sm:text-sm mb-1"
+                                                <div
+                                                    class="flex items-center gap-4"
+                                                >
+                                                    <div
+                                                        class="w-12 h-12 rounded-lg bg-black/40 flex flex-col items-center justify-center border border-white/10 shadow-inner"
                                                     >
-                                                        📅 {formatDate(
-                                                            scrape.scrapeDate,
-                                                        )}
-                                                    </p>
-                                                    <p
-                                                        class="text-gray-900 font-semibold text-sm sm:text-base"
-                                                    >
-                                                        🎥 {Object.keys(
-                                                            scrape.moviesScraped,
-                                                        ).length} movies scraped
-                                                    </p>
+                                                        <span
+                                                            class="text-xs text-gray-400 font-bold"
+                                                            >{new Date(
+                                                                scrape.scrapeDate,
+                                                            ).getDate()}</span
+                                                        >
+                                                        <span
+                                                            class="text-[10px] text-primary-400 uppercase"
+                                                            >{new Date(
+                                                                scrape.scrapeDate,
+                                                            ).toLocaleString(
+                                                                "default",
+                                                                {
+                                                                    month: "short",
+                                                                },
+                                                            )}</span
+                                                        >
+                                                    </div>
+                                                    <div>
+                                                        <p
+                                                            class="text-gray-300 text-sm font-medium mb-1"
+                                                        >
+                                                            {new Date(
+                                                                scrape.scrapeDate,
+                                                            ).toLocaleTimeString(
+                                                                [],
+                                                                {
+                                                                    hour: "2-digit",
+                                                                    minute: "2-digit",
+                                                                },
+                                                            )}
+                                                        </p>
+                                                        <div
+                                                            class="flex items-center gap-2"
+                                                        >
+                                                            <span
+                                                                class="text-white font-bold"
+                                                                >{Object.keys(
+                                                                    scrape.moviesScraped,
+                                                                ).length}</span
+                                                            >
+                                                            <span
+                                                                class="text-gray-400 text-sm"
+                                                                >films
+                                                                discovered</span
+                                                            >
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div
-                                                    class="text-xl sm:text-2xl text-primary-500 transition-transform duration-200 ml-2 sm:ml-4 shrink-0"
+                                                    class="text-gray-500 group-hover:text-primary-400 transition-colors"
                                                 >
-                                                    {expandedScrapes.has(
-                                                        scrape.id || "",
-                                                    )
-                                                        ? "▼"
-                                                        : "▶"}
+                                                    <span
+                                                        class="text-xl transform transition-transform duration-300 inline-block {expandedScrapes.has(
+                                                            scrape.id || '',
+                                                        )
+                                                            ? 'rotate-180'
+                                                            : ''}">▼</span
+                                                    >
                                                 </div>
                                             </div>
 
-                                            <!-- Movies List (Expandable) -->
+                                            <!-- Movies List -->
                                             {#if expandedScrapes.has(scrape.id || "")}
                                                 <div
-                                                    class="bg-gray-50 border-t border-gray-200 p-2 sm:p-3 md:p-4"
+                                                    class="p-4 bg-black/40 border-t border-white/5 animate-fade-in"
                                                 >
-                                                    <h4
-                                                        class="text-sm sm:text-base font-semibold text-gray-800 mb-2 sm:mb-3"
-                                                    >
-                                                        Movies Scraped:
-                                                    </h4>
                                                     <div
-                                                        class="space-y-1.5 sm:space-y-2"
+                                                        class="grid grid-cols-1 lg:grid-cols-2 gap-3"
                                                     >
                                                         {#each Object.entries(scrape.moviesScraped) as [title, imdbId]}
                                                             <div
-                                                                class="bg-white p-2 sm:p-3 rounded-sm border-l-4 border-primary-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 transition-transform duration-200 hover:translate-x-1"
+                                                                class="group flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-primary-500/30 hover:bg-primary-500/10 transition-all duration-300"
                                                             >
-                                                                <span
-                                                                    class="text-gray-900 text-xs sm:text-sm flex-1 wrap-break-word"
-                                                                >
-                                                                    🎬 {title}
-                                                                </span>
                                                                 <div
-                                                                    class="flex gap-2 flex-wrap"
+                                                                    class="flex items-center gap-3 overflow-hidden"
                                                                 >
-                                                                    <button
-                                                                        onclick={() =>
-                                                                            viewFilm(
-                                                                                imdbId,
-                                                                            )}
-                                                                        disabled={isLoadingFilm}
-                                                                        class="inline-block bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-sm transition-colors duration-200 text-xs sm:text-sm w-full sm:w-auto"
+                                                                    <div
+                                                                        class="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center shrink-0 shadow-inner"
                                                                     >
-                                                                        {isLoadingFilm
-                                                                            ? "Loading..."
-                                                                            : "View Film"}
-                                                                    </button>
+                                                                        <span
+                                                                            class="text-sm"
+                                                                            >🎬</span
+                                                                        >
+                                                                    </div>
+                                                                    <span
+                                                                        class="text-gray-200 text-sm font-medium truncate group-hover:text-white transition-colors"
+                                                                        {title}
+                                                                    >
+                                                                        {title}
+                                                                    </span>
                                                                 </div>
+                                                                <button
+                                                                    onclick={() =>
+                                                                        viewFilm(
+                                                                            imdbId,
+                                                                        )}
+                                                                    disabled={isLoadingFilm}
+                                                                    class="shrink-0 ml-3 bg-white/10 hover:bg-primary-500 text-white hover:text-white disabled:opacity-50 text-xs font-semibold py-1.5 px-3 rounded-md transition-all duration-300 flex items-center gap-1 border border-white/10 hover:border-primary-400 hover:shadow-[0_0_10px_rgba(124,58,237,0.5)]"
+                                                                >
+                                                                    {#if isLoadingFilm}
+                                                                        <span
+                                                                            class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"
+                                                                        ></span>
+                                                                    {:else}
+                                                                        <span
+                                                                            >Details</span
+                                                                        ><span
+                                                                            class="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300"
+                                                                            >→</span
+                                                                        >
+                                                                    {/if}
+                                                                </button>
                                                             </div>
                                                         {/each}
                                                     </div>
@@ -302,13 +398,26 @@
         {/if}
 
         <!-- Footer -->
-        <footer class="text-center text-white py-6 sm:py-8">
-            <p class="text-sm sm:text-base md:text-lg font-medium">
-                Total scrape records: {history.length}
-                {#if groupedHistory.size > 0}
-                    • Sources: {groupedHistory.size}
-                {/if}
-            </p>
-        </footer>
+        {#if history.length > 0}
+            <footer class="text-center py-8 border-t border-white/10 mt-8">
+                <div
+                    class="inline-flex items-center gap-3 px-6 py-2 rounded-full glass-panel border border-white/5"
+                >
+                    <span
+                        class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"
+                    ></span>
+                    <p class="text-sm font-medium text-gray-300">
+                        Total Records: <span class="text-white font-bold"
+                            >{history.length}</span
+                        >
+                        <span class="opacity-50 mx-2">|</span>
+                        Sources:
+                        <span class="text-white font-bold"
+                            >{groupedHistory.size}</span
+                        >
+                    </p>
+                </div>
+            </footer>
+        {/if}
     </div>
 </div>
