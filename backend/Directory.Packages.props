@@ -9,7 +9,7 @@
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Bun" Version="13.1.2-beta.518" />
     <PackageVersion Include="Mazilious.Common" Version="0.4.0" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.41" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.46" />
     <!-- MongoDB packages -->
     <PackageVersion Include="MongoDB.Bson" Version="3.6.0" />
     <PackageVersion Include="MongoDB.Driver" Version="3.6.0" />
