@@ -1,6 +1,8 @@
 <script lang="ts">
     import type { PageData } from "./$types";
     import FilmModal from "$lib/components/FilmModal.svelte";
+    import ErrorPanel from "$lib/components/ui/ErrorPanel.svelte";
+    import EmptyState from "$lib/components/ui/EmptyState.svelte";
     import type { Film } from "$lib/types/film";
 
     let { data }: { data: PageData } = $props();
@@ -130,49 +132,19 @@
 
         <!-- Error State -->
         {#if error}
-            <div
-                class="glass-panel border-l-4 border-l-red-500 p-6 mb-8 rounded-xl animate-slide-up"
-            >
-                <div class="flex items-center gap-4">
-                    <div class="p-3 bg-red-500/20 rounded-full">
-                        <span
-                            class="text-2xl filter drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]"
-                            >⚠️</span
-                        >
-                    </div>
-                    <div>
-                        <p class="text-red-400 font-semibold text-lg mb-1">
-                            {error}
-                        </p>
-                        <p class="text-gray-400 text-sm">
-                            Make sure the backend API is running on port 5104
-                        </p>
-                    </div>
-                </div>
-            </div>
+            <ErrorPanel
+                errorMessage={error}
+                hint="Make sure the backend API is running on port 5104"
+            />
         {/if}
 
         <!-- Empty State -->
         {#if history.length === 0 && !error}
-            <div
-                class="glass-panel p-12 text-center rounded-2xl animate-slide-up border border-white/5"
-            >
-                <div
-                    class="w-24 h-24 mx-auto mb-6 bg-primary-500/10 rounded-full flex items-center justify-center"
-                >
-                    <span
-                        class="text-4xl filter drop-shadow-[0_0_10px_rgba(124,58,237,0.5)]"
-                        >🔍</span
-                    >
-                </div>
-                <h3 class="text-2xl font-bold text-white mb-2 font-outfit">
-                    No History Found
-                </h3>
-                <p class="text-gray-400 max-w-md mx-auto">
-                    Your database is currently empty. Run the scraper to start
-                    discovering and tracking new premium films!
-                </p>
-            </div>
+            <EmptyState
+                icon="🔍"
+                title="No History Found"
+                description="Your database is currently empty. Run the scraper to start discovering and tracking new premium films!"
+            />
         {:else if groupedHistory.size > 0}
             <!-- Grouped History List -->
             <div class="space-y-6 mb-12">
