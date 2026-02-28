@@ -8,5 +8,5 @@ public record RadarrSettings
 
     public required int QualityProfileId { get; init; } = 5;
 
-    public required string RootFolderPath { get; init; } = "/mnt/media/movies";
+    public required string RootFolderPath { get; init; } = "/movies";
 }
