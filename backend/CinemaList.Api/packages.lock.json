@@ -13,9 +13,9 @@
       },
       "Scalar.AspNetCore": {
         "type": "Direct",
-        "requested": "[2.12.41, )",
-        "resolved": "2.12.41",
-        "contentHash": "uO90maY4ayqLHq+LFPKgRxPBlI8GPYOLLv5VkPvenG75p7pQ8lUb3jpQWxe02GeKgivyxlxJ1tNsIlCpHg1S6w=="
+        "requested": "[2.13.1, )",
+        "resolved": "2.13.1",
+        "contentHash": "HxkQC71kWUQBdj/51GFyETO21pqmK5hfNpovAdIi4d/XEv/HIoMCNw3CGSwT0h5E8rG3CuaSm/Wz0xk7eLbu9A=="
       },
       "TMDbLib": {
         "type": "Direct",
@@ -183,8 +183,8 @@
         "type": "Project",
         "dependencies": {
           "Mazilious.Common": "[0.4.0, )",
-          "MongoDB.Bson": "[3.6.0, )",
-          "MongoDB.Driver": "[3.6.0, )"
+          "MongoDB.Bson": "[3.7.0, )",
+          "MongoDB.Driver": "[3.7.0, )"
         }
       },
       "cinemalist.scraper": {
@@ -244,18 +244,18 @@
       },
       "MongoDB.Bson": {
         "type": "CentralTransitive",
-        "requested": "[3.6.0, )",
-        "resolved": "3.6.0",
-        "contentHash": "lP+nZHej9cGFVsZSZQhSdBpD60q7a/ZiLBJcfd+CRWs36BHYteaMx6m1qaHCBWT1wft640r9I4SexqpMc3VscA=="
+        "requested": "[3.7.0, )",
+        "resolved": "3.7.0",
+        "contentHash": "u8f0UAYe2/LWdvLEwwIjkCd2Rx6vBo6Yab+i+D4B3E0AvK1ndzIsIHuGBCeYeg5r8+/V+m1TXLonlhwT9Vfdrg=="
       },
       "MongoDB.Driver": {
         "type": "CentralTransitive",
-        "requested": "[3.6.0, )",
-        "resolved": "3.6.0",
-        "contentHash": "MzEVPUo9FJ3A2fvXdKr0vGllbiAGvpyLa8bU6bucKSKndraSjfgGDn/J+ek/SrUK4A3yozYZBkwJZm8qe36VmQ==",
+        "requested": "[3.7.0, )",
+        "resolved": "3.7.0",
+        "contentHash": "3Xr9Z6GzfewLbPNCtC+9Z8AvU9rtWzPG0Dl7BPYF2MiMxGMsrU/dp2cYOY39yxzOJAye/lWIWYX/lVmyQLQbYQ==",
         "dependencies": {
           "DnsClient": "1.6.1",
-          "MongoDB.Bson": "3.6.0",
+          "MongoDB.Bson": "3.7.0",
           "SharpCompress": "0.30.1",
           "Snappier": "1.0.0",
           "ZstdSharp.Port": "0.7.3"
